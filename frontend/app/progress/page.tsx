@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { ProgressChart } from "@/components/charts/ProgressChart";
 import { getProgressOverview } from "@/lib/api";
 import { UserProgressOverview } from "@/types";
@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 
 import { useSearchParams, useRouter } from "next/navigation";
 
-export default function ProgressPage() {
+function ProgressPageInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [selectedExamId, setSelectedExamId] = useState(searchParams.get("exam") || "Group_II");
@@ -173,6 +173,14 @@ export default function ProgressPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ProgressPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div></div>}>
+      <ProgressPageInner />
+    </Suspense>
   );
 }
 

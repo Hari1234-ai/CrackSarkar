@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { TopicNavigator } from "@/components/navigation/TopicNavigator";
 import { getSyllabusTree, updateProgress, getAIExplanation } from "@/lib/api";
 import { Paper, Subtopic, Concept, AIInsight } from "@/types";
@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 
 import { useSearchParams, useRouter } from "next/navigation";
 
-export default function StudyPage() {
+function StudyPageInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [selectedExamId, setSelectedExamId] = useState<string>(searchParams.get("exam") || "Group_II");
@@ -322,3 +322,10 @@ function ConceptSection({ concept, onComplete }: { concept: Concept, onComplete:
   );
 }
 
+export default function StudyPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary" /></div>}>
+      <StudyPageInner />
+    </Suspense>
+  );
+}

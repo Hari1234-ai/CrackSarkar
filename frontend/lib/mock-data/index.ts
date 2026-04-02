@@ -28,14 +28,14 @@ export const MOCK_PROGRESS: UserProgressOverview = {
 
 export const MOCK_TODAY_PLAN: DailyPlan = {
   date: new Date().toISOString(),
-  overallProgress: 0,
+  overall_progress: 0,
   tasks: [
     {
       id: "tsk-1",
       type: "study",
       title: "Fundamental Rights (Polity)",
       description: "Review articles 12 to 35. Focus on exceptions.",
-      durationMinutes: 45,
+      duration_minutes: 45,
       completed: false,
     },
     {
@@ -43,7 +43,7 @@ export const MOCK_TODAY_PLAN: DailyPlan = {
       type: "practice",
       title: "Geography River Systems Quiz",
       description: "Take a 20 question quiz to solidify your strong area.",
-      durationMinutes: 20,
+      duration_minutes: 20,
       completed: false,
     },
     {
@@ -51,7 +51,7 @@ export const MOCK_TODAY_PLAN: DailyPlan = {
       type: "revision",
       title: "Telangana Economy",
       description: "Revisit key dates and figures from the last mock test.",
-      durationMinutes: 30,
+      duration_minutes: 30,
       completed: true,
     },
   ],
@@ -60,6 +60,7 @@ export const MOCK_TODAY_PLAN: DailyPlan = {
 export const MOCK_SYLLABUS: Paper[] = [
   {
     id: "p1",
+    exam_id: "Group_II",
     title: "Paper II: History, Polity & Society",
     subjects: [
       {
@@ -80,7 +81,7 @@ export const MOCK_SYLLABUS: Paper[] = [
                     id: "c-1",
                     title: "Definition of State (Art 12)",
                     content: "The term 'State' includes the Government and Parliament of India...",
-                    keyPoints: ["Includes executive and legislative organs", "Includes local authorities"],
+                    key_points: ["Includes executive and legislative organs", "Includes local authorities"],
                     examples: ["LIC, ONGC are considered state"],
                     completed: true
                   }
@@ -95,7 +96,7 @@ export const MOCK_SYLLABUS: Paper[] = [
                     id: "c-2",
                     title: "Equality before Law (Art 14)",
                     content: "The State shall not deny to any person equality before the law...",
-                    keyPoints: ["Rule of law", "Equal protection of laws"],
+                    key_points: ["Rule of law", "Equal protection of laws"],
                     examples: [],
                     completed: false
                   }
