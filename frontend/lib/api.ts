@@ -1,11 +1,11 @@
 import axios from "axios";
 import { Paper, DailyPlan, UserProgressOverview, Question, AIInsight } from "../types";
+import { MOCK_SYLLABUS, MOCK_TODAY_PLAN, MOCK_PROGRESS } from "./mock-data";
 
 // In Next.js, NEXT_PUBLIC_ env vars are inlined at build time.
 // Using type assertion avoids needing @types/node for `process`.
 declare const process: { env: Record<string, string | undefined> };
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
-
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -14,22 +14,37 @@ const apiClient = axios.create({
   },
 });
 
-export const getSyllabusTree = async (examId?: string): Promise<Paper[]> => {
-  const params = examId ? { exam_id: examId } : {};
-  const response = await apiClient.get("/syllabus/tree", { params });
-  return response.data;
+export const getSyllabusTree = async (examId: string = "Group_II"): Promise<Paper[]> => {
+  try {
+    const params = { exam_id: examId };
+    const response = await apiClient.get("/syllabus/tree", { params });
+    return response.data && response.data.length > 0 ? response.data : MOCK_SYLLABUS;
+  } catch (error) {
+    console.warn("Using mock syllabus data (backend unreachable)");
+    return MOCK_SYLLABUS;
+  }
 };
 
-export const getTodayPlan = async (examId?: string): Promise<DailyPlan> => {
-  const params = examId ? { exam_id: examId } : {};
-  const response = await apiClient.get("/plan/today", { params });
-  return response.data;
+export const getTodayPlan = async (examId: string = "Group_II"): Promise<DailyPlan> => {
+  try {
+    const params = { exam_id: examId };
+    const response = await apiClient.get("/plan/today", { params });
+    return response.data && response.data.tasks ? response.data : MOCK_TODAY_PLAN;
+  } catch (error) {
+    console.warn("Using mock today plan data (backend unreachable)");
+    return MOCK_TODAY_PLAN;
+  }
 };
 
-export const getProgressOverview = async (examId?: string): Promise<UserProgressOverview> => {
-  const params = examId ? { exam_id: examId } : {};
-  const response = await apiClient.get("/progress/overview", { params });
-  return response.data;
+export const getProgressOverview = async (examId: string = "Group_II"): Promise<UserProgressOverview> => {
+  try {
+    const params = { exam_id: examId };
+    const response = await apiClient.get("/progress/overview", { params });
+    return response.data && response.data.overallCompletion !== undefined ? response.data : MOCK_PROGRESS;
+  } catch (error) {
+    console.warn("Using mock progress data (backend unreachable)");
+    return MOCK_PROGRESS;
+  }
 };
 
 export const updateProgress = async (
@@ -40,30 +55,58 @@ export const updateProgress = async (
   timeSpent: number = 0,
   userId: string = "default_user"
 ): Promise<any> => {
-  const response = await apiClient.post("/progress/update", null, {
-    params: {
-      item_id: itemId,
-      item_type: itemType,
-      completed,
-      accuracy,
-      time_spent: timeSpent,
-      user_id: userId,
-    },
-  });
-  return response.data;
+  try {
+    const response = await apiClient.post("/progress/update", null, {
+      params: {
+        item_id: itemId,
+        item_type: itemType,
+        completed,
+        accuracy,
+        time_spent: timeSpent,
+        user_id: userId,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Failed to update progress on backend");
+    return { success: true, localOnly: true };
+  }
 };
 
 export const getAIExplanation = async (conceptId: string, language: string = "en"): Promise<AIInsight> => {
-  const response = await apiClient.get(`/ai/explain?concept_id=${conceptId}&lang=${language}`);
-  return response.data;
+  try {
+    const response = await apiClient.get(`/ai/explain`, {
+      params: { concept_id: conceptId, lang: language }
+    });
+    return response.data;
+  } catch (error) {
+    return {
+      english: {
+        simplified: "This is a simplified English explanation of the concept once the backend is connected.",
+        mnemonic: "Memory aid in English"
+      },
+      telugu: {
+        simplified: "బ్యాక్ ఎండ్ కనెక్ట్ అయిన తర్వాత ఈ కాన్సెప్ట్ యొక్క సరళీకృత తెలుగు వివరణ ఇక్కడ కనిపిస్తుంది.",
+        mnemonic: "తెలుగులో మెమరీ ఎయిడ్"
+      }
+    };
+  }
 };
 
 export const getTopicQuestions = async (topicId: string): Promise<Question[]> => {
-  const response = await apiClient.get(`/practice/questions/${topicId}`);
-  return response.data;
+  try {
+    const response = await apiClient.get(`/practice/questions/${topicId}`);
+    return response.data;
+  } catch (error) {
+    return [];
+  }
 };
 
 export const getRandomQuestions = async (limit: number = 5): Promise<Question[]> => {
-  const response = await apiClient.get(`/practice/questions/random?limit=${limit}`);
-  return response.data;
+  try {
+    const response = await apiClient.get(`/practice/questions/random`, { params: { limit } });
+    return response.data;
+  } catch (error) {
+    return [];
+  }
 };
