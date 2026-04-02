@@ -1,0 +1,29 @@
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from .api.v1.api import api_router
+from .db.session import engine
+from .db.base import Base
+
+# Create database tables
+Base.metadata.create_all(bind=engine)
+
+app = FastAPI(
+    title="TSPSC Mastery API",
+    description="Backend for AI-powered TSPSC exam preparation platform",
+    version="1.0.0"
+)
+
+# Set up CORS for local development
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.get("/")
+def read_root():
+    return {"message": "Welcome to TSPSC Mastery API", "status": "online"}
+
+app.include_router(api_router, prefix="/api/v1")
