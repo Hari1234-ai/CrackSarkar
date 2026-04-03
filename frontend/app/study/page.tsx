@@ -2,11 +2,11 @@
 
 import React, { Suspense, useEffect, useState } from "react";
 import { TopicNavigator } from "@/components/navigation/TopicNavigator";
-import { getSyllabusTree, updateProgress, getAIExplanation, getSubtopicDetails } from "@/lib/api";
-import { Paper, Subtopic, Concept, AIInsight } from "@/types";
+import { getSyllabusTree, updateProgress, getSubtopicDetails } from "@/lib/api";
+import { Paper, Subtopic, Concept } from "@/types";
 import { 
   CheckCircle2, BookOpen, Clock, ChevronRight, Play, 
-  Maximize2, Minimize2, Sparkles, Languages, Lightbulb 
+  Maximize2, Minimize2, Languages
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -223,26 +223,6 @@ function StudyPageInner() {
 }
 
 function ConceptSection({ concept, language, onComplete }: { concept: Concept, language: "english" | "telugu", onComplete: () => void }) {
-  const [aiData, setAiData] = useState<{ english: any, telugu: any } | null>(null);
-  const [showAI, setShowAI] = useState(false);
-  const [aiLoading, setAiLoading] = useState(false);
-
-  const handleFetchAI = async () => {
-    if (aiData) {
-      setShowAI(!showAI);
-      return;
-    }
-    setAiLoading(true);
-    setShowAI(true);
-    try {
-      const data = await getAIExplanation(concept.id);
-      setAiData(data);
-    } catch (error) {
-      console.error("Error fetching AI insight:", error);
-    } finally {
-      setAiLoading(false);
-    }
-  };
 
   const currentContent = language === "telugu" ? (concept.content_telugu || concept.content) : concept.content;
   const currentKeyPoints = language === "telugu" ? (concept.key_points_telugu || concept.key_points) : concept.key_points;
@@ -269,64 +249,7 @@ function ConceptSection({ concept, language, onComplete }: { concept: Concept, l
             {concept.title}
             {concept.completed && <span className="text-xs font-medium text-green-600 bg-green-100 px-2 py-0.5 rounded-full">Completed</span>}
           </h2>
-          
-          <button 
-            onClick={handleFetchAI}
-            className={cn(
-              "flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all border",
-              showAI ? "bg-primary text-primary-foreground border-primary" : "bg-primary/5 text-primary border-primary/20 hover:bg-primary/10"
-            )}
-          >
-            <Sparkles className={cn("h-4 w-4", aiLoading && "animate-pulse")} />
-            {aiLoading ? "Thinking..." : showAI ? "Hide AI Insight" : "✨ AI Insight"}
-          </button>
         </div>
-
-        <AnimatePresence>
-          {showAI && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="overflow-hidden"
-            >
-              <div className="bg-gradient-to-br from-primary/5 via-primary/10 to-transparent border border-primary/20 rounded-2xl p-6 space-y-4 my-2 relative">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-primary font-bold text-xs uppercase tracking-widest">
-                    <Lightbulb className="h-4 w-4" />
-                    AI Intelligence Agent
-                  </div>
-                </div>
-
-                {aiLoading ? (
-                  <div className="space-y-3 py-4">
-                    <div className="h-4 w-full bg-primary/10 animate-pulse rounded" />
-                    <div className="h-4 w-3/4 bg-primary/10 animate-pulse rounded" />
-                  </div>
-                ) : aiData ? (
-                  <motion.div 
-                    initial={{ opacity: 0 }} 
-                    animate={{ opacity: 1 }}
-                    className="space-y-4"
-                  >
-                    <p className={cn(
-                      "text-sm md:text-base leading-relaxed text-foreground/90 font-medium",
-                      language === "telugu" && "font-telugu leading-loose"
-                    )}>
-                      {aiData[language].simplified}
-                    </p>
-                    <div className="bg-primary/10 rounded-xl p-4 border border-primary/10">
-                      <div className="text-[10px] font-black uppercase tracking-tighter text-primary/60 mb-1">Mnemonic Device</div>
-                      <p className={cn("text-sm font-bold text-primary italic", language === "telugu" && "font-telugu")}>
-                        {aiData[language].mnemonic}
-                      </p>
-                    </div>
-                  </motion.div>
-                ) : null}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
 
         <div className="prose prose-slate dark:prose-invert max-w-none pt-2">
           <p className={cn(

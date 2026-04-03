@@ -152,3 +152,16 @@ export const getSubtopicDetails = async (subtopicId: string): Promise<Subtopic> 
     throw error;
   }
 };
+
+export const updateSubtopicContent = async (subtopicId: string, content: string, contentTelugu?: string): Promise<any> => {
+  try {
+    const response = await apiClient.put(`/syllabus/subtopic/${subtopicId}/content`, {
+      content,
+      content_telugu: contentTelugu,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Failed to update subtopic content", error);
+    throw error;
+  }
+};

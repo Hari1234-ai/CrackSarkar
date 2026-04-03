@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
-from ...db.session import get_db
-from ...db.base import Question
+from app.db.session import get_db
+from app.db.base import Question
 from pydantic import BaseModel
 from typing import Optional, Dict, Any
 

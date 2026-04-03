@@ -17,6 +17,15 @@ class ConceptSchema(ConceptBase):
     class Config:
         from_attributes = True
 
+class ConceptUpdate(BaseModel):
+    title: Optional[str] = None
+    content: Optional[str] = None
+    content_telugu: Optional[str] = None
+    key_points: Optional[List[str]] = None
+    key_points_telugu: Optional[List[str]] = None
+    examples: Optional[List[str]] = None
+    examples_telugu: Optional[List[str]] = None
+
 class SubtopicBase(BaseModel):
     id: str
     title: str
@@ -29,6 +38,10 @@ class SubtopicSchema(SubtopicBase):
     concepts: List[ConceptSchema]
     class Config:
         from_attributes = True
+
+class SubtopicContentUpdate(BaseModel):
+    content: str
+    content_telugu: Optional[str] = None
 
 class TopicBase(BaseModel):
     id: str
