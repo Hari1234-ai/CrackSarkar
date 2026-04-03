@@ -27,6 +27,7 @@ class Topic(Base):
     subject_id = Column(String, ForeignKey("subjects.id"))
     subject = relationship("Subject", back_populates="topics")
     subtopics = relationship("Subtopic", back_populates="topic", cascade="all, delete-orphan")
+    concepts = relationship("Concept", back_populates="topic", cascade="all, delete-orphan")
 
 class Subtopic(Base):
     __tablename__ = "subtopics"
@@ -46,8 +47,10 @@ class Concept(Base):
     key_points_telugu = Column(JSON, nullable=True)
     examples = Column(JSON)    # List of strings
     examples_telugu = Column(JSON, nullable=True)
-    subtopic_id = Column(String, ForeignKey("subtopics.id"))
+    subtopic_id = Column(String, ForeignKey("subtopics.id"), nullable=True)
     subtopic = relationship("Subtopic", back_populates="concepts")
+    topic_id = Column(String, ForeignKey("topics.id"), nullable=True)
+    topic = relationship("Topic", back_populates="concepts")
 
 class UserProgress(Base):
     __tablename__ = "user_progress"

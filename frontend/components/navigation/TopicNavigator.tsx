@@ -7,16 +7,16 @@ import { cn } from "@/lib/utils";
 
 interface TopicNavigatorProps {
   papers: Paper[];
-  onSelectSubtopic: (subtopic: Subtopic) => void;
-  selectedSubtopicId?: string;
+  onSelectItem: (item: Topic | Subtopic, type: "topic" | "subtopic") => void;
+  selectedItemId?: string;
   selectedExamId: string;
   onSelectExam: (examId: string) => void;
 }
 
 export function TopicNavigator({ 
   papers, 
-  onSelectSubtopic, 
-  selectedSubtopicId,
+  onSelectItem, 
+  selectedItemId,
   selectedExamId,
   onSelectExam
 }: TopicNavigatorProps) {
@@ -44,9 +44,17 @@ export function TopicNavigator({
   const toggleSubject = (id: string) => setExpandedSubjects(prev => 
     prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]
   );
-  const toggleTopic = (id: string) => setExpandedTopics(prev => 
-    prev.includes(id) ? prev.filter(t => t !== id) : [...prev, id]
-  );
+  const toggleTopic = (id: string) => {
+    // If no subtopics, select it directly
+    const topic = papers.flatMap(p => p.subjects).flatMap(s => s.topics).find(t => t.id === id);
+    if (topic && (!topic.subtopics || topic.subtopics.length === 0)) {
+      onSelectItem(topic, "topic");
+      return;
+    }
+    setExpandedTopics(prev => 
+      prev.includes(id) ? prev.filter(t => t !== id) : [...prev, id]
+    );
+  };
 
   return (
     <div className="space-y-6">
@@ -128,13 +136,20 @@ export function TopicNavigator({
                           <div key={topic.id}>
                             <button
                               onClick={() => toggleTopic(topic.id)}
-                              className="flex items-center justify-between w-full text-left p-2 hover:bg-secondary rounded-lg transition-colors"
+                              className={cn(
+                                "flex items-center justify-between w-full text-left p-2 hover:bg-secondary rounded-lg transition-colors overflow-hidden",
+                                (topic.subtopics && topic.subtopics.length > 0) ? "" : (selectedItemId === topic.id ? "bg-primary/10 text-primary font-medium" : "")
+                              )}
                             >
                               <div className="flex items-center gap-2 overflow-hidden mr-2">
-                                {expandedTopics.includes(topic.id) ? (
-                                  <ChevronDown className="h-3 w-3 text-muted-foreground shrink-0" />
+                                {(topic.subtopics && topic.subtopics.length > 0) ? (
+                                  expandedTopics.includes(topic.id) ? (
+                                    <ChevronDown className="h-3 w-3 text-muted-foreground shrink-0" />
+                                  ) : (
+                                    <ChevronRight className="h-3 w-3 text-muted-foreground shrink-0" />
+                                  )
                                 ) : (
-                                  <ChevronRight className="h-3 w-3 text-muted-foreground shrink-0" />
+                                  <BookOpen className="h-3 w-3 text-primary shrink-0" />
                                 )}
                                 <span className="text-sm truncate">{topic.title}</span>
                               </div>
@@ -148,15 +163,15 @@ export function TopicNavigator({
                               </span>
                             </button>
 
-                            {expandedTopics.includes(topic.id) && (
+                            {expandedTopics.includes(topic.id) && topic.subtopics && topic.subtopics.length > 0 && (
                               <div className="ml-3 mt-1 pl-3 space-y-1">
                                 {topic.subtopics.map((subtopic) => (
                                   <button
                                     key={subtopic.id}
-                                    onClick={() => onSelectSubtopic(subtopic)}
+                                    onClick={() => onSelectItem(subtopic, "subtopic")}
                                     className={cn(
                                       "flex items-center justify-between w-full text-left p-2 rounded-lg transition-colors text-xs",
-                                      selectedSubtopicId === subtopic.id 
+                                      selectedItemId === subtopic.id 
                                         ? "bg-primary/10 text-primary font-medium" 
                                         : "text-muted-foreground hover:bg-secondary hover:text-foreground"
                                     )}

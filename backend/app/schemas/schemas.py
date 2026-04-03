@@ -53,6 +53,7 @@ class TopicCreate(TopicBase):
 
 class TopicSchema(TopicBase):
     subtopics: List[SubtopicSchema]
+    concepts: List[ConceptSchema]
     class Config:
         from_attributes = True
 

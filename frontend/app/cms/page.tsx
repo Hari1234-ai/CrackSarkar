@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { getSyllabusTree, updateSubtopicContent } from "@/lib/api";
+import { getSyllabusTree, updateSubtopicContent, updateTopicContent } from "@/lib/api";
 import { Paper, Subject, Topic, Subtopic } from "@/types";
 import { 
   Save, 
@@ -46,8 +46,9 @@ export default function CMSPage() {
   }, []);
 
   const handleSave = async () => {
-    if (!selectedSubtopic || !contentEn) {
-      setError("Please select a subtopic and provide English content.");
+    const targetId = selectedSubtopic || selectedTopic;
+    if (!targetId || !contentEn) {
+      setError("Please select a topic/subtopic and provide English content.");
       return;
     }
 
@@ -56,9 +57,12 @@ export default function CMSPage() {
     setSuccess(null);
 
     try {
-      await updateSubtopicContent(selectedSubtopic, contentEn, contentTe);
+      if (selectedSubtopic) {
+        await updateSubtopicContent(selectedSubtopic, contentEn, contentTe);
+      } else {
+        await updateTopicContent(selectedTopic, contentEn, contentTe);
+      }
       setSuccess("Content updated successfully!");
-      // Clear success after 3 seconds
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
       setError("Failed to update content. Please try again.");
@@ -73,16 +77,17 @@ export default function CMSPage() {
   const currentTopic = currentSubject?.topics.find(t => t.id === selectedTopic);
   const currentSubtopic = currentTopic?.subtopics.find(st => st.id === selectedSubtopic);
 
-  // Update content when subtopic changes
+  // Update content when selection changes
   useEffect(() => {
-    if (currentSubtopic && currentSubtopic.concepts && currentSubtopic.concepts.length > 0) {
-      setContentEn(currentSubtopic.concepts[0].content || "");
-      setContentTe(currentSubtopic.concepts[0].content_telugu || "");
+    const target = currentSubtopic || currentTopic;
+    if (target && target.concepts && target.concepts.length > 0) {
+      setContentEn(target.concepts[0].content || "");
+      setContentTe(target.concepts[0].content_telugu || "");
     } else {
       setContentEn("");
       setContentTe("");
     }
-  }, [selectedSubtopic, currentSubtopic]);
+  }, [selectedSubtopic, selectedTopic, currentSubtopic, currentTopic]);
 
   if (loading) {
     return (
@@ -111,7 +116,7 @@ export default function CMSPage() {
           
           <button
             onClick={handleSave}
-            disabled={saving || !selectedSubtopic}
+            disabled={saving || (!selectedSubtopic && !selectedTopic)}
             className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-semibold transition-all duration-300 ${
               saving || !selectedSubtopic
                 ? "bg-slate-700 text-slate-400 cursor-not-allowed"
@@ -188,25 +193,26 @@ export default function CMSPage() {
                 </select>
               </div>
 
-              {/* Subtopic Select */}
-              <div>
-                <label className="block text-sm font-medium text-slate-400 mb-2">Subtopic (Concept ID)</label>
-                <select 
-                  value={selectedSubtopic}
-                  disabled={!selectedTopic}
-                  onChange={(e) => setSelectedSubtopic(e.target.value)}
-                  className="w-full bg-[#0f172a] border border-slate-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all appearance-none disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <option value="">Select Subtopic</option>
-                  {currentTopic?.subtopics.map(st => <option key={st.id} value={st.id}>{st.title}</option>)}
-                </select>
-              </div>
+              {/* Subtopic Select (Optional) */}
+              {currentTopic && currentTopic.subtopics && currentTopic.subtopics.length > 0 && (
+                <div>
+                  <label className="block text-sm font-medium text-slate-400 mb-2">Subtopic (Optional)</label>
+                  <select 
+                    value={selectedSubtopic}
+                    onChange={(e) => setSelectedSubtopic(e.target.value)}
+                    className="w-full bg-[#0f172a] border border-slate-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all appearance-none"
+                  >
+                    <option value="">Select Subtopic</option>
+                    {currentTopic.subtopics.map(st => <option key={st.id} value={st.id}>{st.title}</option>)}
+                  </select>
+                </div>
+              )}
             </div>
 
-            {selectedSubtopic && (
+            {(selectedSubtopic || selectedTopic) && (
               <div className="mt-8 p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
                 <p className="text-xs text-blue-400 font-bold uppercase tracking-wider mb-1">Target ID</p>
-                <p className="text-sm font-mono text-slate-200">{selectedSubtopic}</p>
+                <p className="text-sm font-mono text-slate-200">{selectedSubtopic || selectedTopic}</p>
               </div>
             )}
           </div>
@@ -270,9 +276,9 @@ export default function CMSPage() {
             </div>
             
             <div className="bg-slate-800/30 px-8 py-6 border-t border-slate-700/50 flex justify-end">
-               <button
+              <button
                 onClick={handleSave}
-                disabled={saving || !selectedSubtopic}
+                disabled={saving || (!selectedSubtopic && !selectedTopic)}
                 className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white py-3 px-8 rounded-2xl font-bold shadow-xl shadow-blue-900/20 transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {saving && <Loader2 className="w-5 h-5 animate-spin" />}

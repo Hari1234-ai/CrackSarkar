@@ -165,3 +165,26 @@ export const updateSubtopicContent = async (subtopicId: string, content: string,
     throw error;
   }
 };
+
+export const getTopicDetails = async (topicId: string): Promise<any> => {
+  try {
+    const response = await apiClient.get(`/syllabus/topic/${topicId}`);
+    return response.data;
+  } catch (error) {
+    console.warn("Failed to fetch topic details from backend.");
+    throw error;
+  }
+};
+
+export const updateTopicContent = async (topicId: string, content: string, contentTelugu?: string): Promise<any> => {
+  try {
+    const response = await apiClient.put(`/syllabus/topic/${topicId}/content`, {
+      content,
+      content_telugu: contentTelugu,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Failed to update topic content", error);
+    throw error;
+  }
+};

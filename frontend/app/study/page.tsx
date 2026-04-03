@@ -2,8 +2,8 @@
 
 import React, { Suspense, useEffect, useState } from "react";
 import { TopicNavigator } from "@/components/navigation/TopicNavigator";
-import { getSyllabusTree, updateProgress, getSubtopicDetails } from "@/lib/api";
-import { Paper, Subtopic, Concept } from "@/types";
+import { getSyllabusTree, updateProgress, getSubtopicDetails, getTopicDetails } from "@/lib/api";
+import { Paper, Subtopic, Concept, Topic } from "@/types";
 import { 
   CheckCircle2, BookOpen, Clock, ChevronRight, Play, 
   Maximize2, Minimize2, Languages
@@ -18,7 +18,7 @@ function StudyPageInner() {
   const router = useRouter();
   const [selectedExamId, setSelectedExamId] = useState<string>(searchParams.get("exam") || "Group_II");
   const [syllabus, setSyllabus] = useState<Paper[]>([]);
-  const [selectedSubtopic, setSelectedSubtopic] = useState<Subtopic | null>(null);
+  const [selectedItem, setSelectedItem] = useState<{ id: string, title: string, concepts: Concept[] } | null>(null);
   const [isFocusMode, setIsFocusMode] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
   const [contentLoading, setContentLoading] = useState<boolean>(false);
@@ -32,9 +32,14 @@ function StudyPageInner() {
         setSyllabus(data);
         // Default to first subtopic if available
         if (data.length > 0 && data[0].subjects.length > 0 && data[0].subjects[0].topics.length > 0) {
-          handleSelectSubtopic(data[0].subjects[0].topics[0].subtopics[0]);
+          const firstTopic = data[0].subjects[0].topics[0];
+          if (firstTopic.subtopics && firstTopic.subtopics.length > 0) {
+            handleSelectItem(firstTopic.subtopics[0], "subtopic");
+          } else {
+            handleSelectItem(firstTopic, "topic");
+          }
         } else {
-          setSelectedSubtopic(null);
+          setSelectedItem(null);
         }
       } catch (error) {
         console.error("Error fetching syllabus:", error);
@@ -45,13 +50,17 @@ function StudyPageInner() {
     fetchSyllabus();
   }, [selectedExamId]);
 
-  const handleSelectSubtopic = async (subtopic: Subtopic) => {
-    setSelectedSubtopic(subtopic);
+  const handleSelectItem = async (item: any, type: "topic" | "subtopic") => {
+    setSelectedItem({ ...item, concepts: item.concepts || [] });
     setContentLoading(true);
     try {
-      // Trigger "Proper Elaborated Content" generation on the backend
-      const details = await getSubtopicDetails(subtopic.id);
-      setSelectedSubtopic(details);
+      if (type === "subtopic") {
+        const details = await getSubtopicDetails(item.id);
+        setSelectedItem(details as any);
+      } else {
+        const details = await getTopicDetails(item.id);
+        setSelectedItem(details as any);
+      }
     } catch (error) {
       console.error("Error fetching elaborate content:", error);
     } finally {
@@ -98,8 +107,8 @@ function StudyPageInner() {
               <h2 className="text-lg font-bold mb-4 px-2">Syllabus</h2>
               <TopicNavigator 
                 papers={syllabus}
-                selectedSubtopicId={selectedSubtopic?.id}
-                onSelectSubtopic={handleSelectSubtopic}
+                selectedItemId={selectedItem?.id}
+                onSelectItem={handleSelectItem}
                 selectedExamId={selectedExamId}
                 onSelectExam={handleExamChange}
               />
@@ -113,7 +122,7 @@ function StudyPageInner() {
         "flex-1 space-y-8 transition-all duration-500 mx-auto",
         isFocusMode ? "max-w-3xl" : "w-full"
       )}>
-        {selectedSubtopic ? (
+        {selectedItem ? (
           <>
             <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
               <div className="space-y-2">
@@ -122,7 +131,7 @@ function StudyPageInner() {
                   <ChevronRight className="h-4 w-4" />
                   <span>Bilingual Deep Dive</span>
                 </div>
-                <h1 className="text-4xl font-black tracking-tight">{selectedSubtopic.title}</h1>
+                <h1 className="text-4xl font-black tracking-tight">{selectedItem.title}</h1>
               </div>
               
               <div className="flex items-center gap-4">
@@ -182,27 +191,34 @@ function StudyPageInner() {
                   </div>
                 </div>
               ) : (
-                selectedSubtopic.concepts.map((concept: Concept, index: number) => (
-                  <motion.div
-                    key={concept.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                  >
-                    <ConceptSection 
-                      concept={concept} 
-                      language={globalLanguage}
-                      onComplete={() => handleCompleteConcept(concept.id)}
-                    />
-                  </motion.div>
-                ))
+                selectedItem.concepts && selectedItem.concepts.length > 0 ? (
+                  selectedItem.concepts.map((concept: Concept, index: number) => (
+                    <motion.div
+                      key={concept.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                    >
+                      <ConceptSection 
+                        concept={concept} 
+                        language={globalLanguage}
+                        onComplete={() => handleCompleteConcept(concept.id)}
+                      />
+                    </motion.div>
+                  ))
+                ) : (
+                  <div className="text-center py-20 bg-muted/30 rounded-3xl border border-dashed border-border text-muted-foreground italic">
+                    No detailed academic explanation uploaded for this section yet. 
+                    <br/>You can add content via the CMS dashboard.
+                  </div>
+                )
               )}
               
               <div className="bg-primary/5 border border-primary/20 rounded-3xl p-8 flex flex-col md:flex-row items-center justify-between gap-6">
                 <div className="space-y-2 text-center md:text-left">
                   <h3 className="text-xl font-bold">Ready to test your knowledge?</h3>
                   <p className="text-muted-foreground">
-                    Take a quick 5-minute quiz on {selectedSubtopic.title} to solidify your learning.
+                    Take a quick 5-minute quiz on {selectedItem.title} to solidify your learning.
                   </p>
                 </div>
                 <button className="flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-xl font-bold hover:bg-primary/90 transition-all scale-105 active:scale-100 shadow-lg shadow-primary/20">
@@ -214,7 +230,7 @@ function StudyPageInner() {
           </>
         ) : (
           <div className="flex items-center justify-center h-64 text-muted-foreground italic">
-            Select a subtopic from the syllabus to start studying.
+            Select a topic or subtopic from the syllabus to start studying.
           </div>
         )}
       </main>

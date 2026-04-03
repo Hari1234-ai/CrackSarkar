@@ -24,6 +24,7 @@ export interface Topic {
   id: string;
   title: string;
   subtopics: Subtopic[];
+  concepts?: Concept[];
   weightage: "High" | "Medium" | "Low";
 }
 

@@ -16,6 +16,10 @@ def get_syllabus_tree(exam_id: str = "Group_II", db: Session = Depends(get_db)):
         selectinload(Paper.subjects)
         .selectinload(Subject.topics)
         .selectinload(Topic.subtopics)
+        .selectinload(Subtopic.concepts),
+        selectinload(Paper.subjects)
+        .selectinload(Subject.topics)
+        .selectinload(Topic.concepts)
     )
     
     if exam_id:
@@ -35,6 +39,52 @@ async def get_subtopic_details(subtopic_id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Subtopic not found")
         
     return subtopic
+
+@router.get("/topic/{topic_id}", response_model=TopicSchema)
+async def get_topic_details(topic_id: str, db: Session = Depends(get_db)):
+    topic = db.query(Topic).options(
+        selectinload(Topic.concepts)
+    ).filter(Topic.id == topic_id).first()
+    
+    if not topic:
+        raise HTTPException(status_code=404, detail="Topic not found")
+        
+    return topic
+
+@router.put("/topic/{topic_id}/content", response_model=ConceptSchema)
+async def update_topic_content(
+    topic_id: str, 
+    content_update: SubtopicContentUpdate, 
+    db: Session = Depends(get_db)
+):
+    # Check if topic exists
+    topic = db.query(Topic).filter(Topic.id == topic_id).first()
+    if not topic:
+        raise HTTPException(status_code=404, detail="Topic not found")
+    
+    # Try to find an existing concept for this topic
+    concept = db.query(Concept).filter(Concept.topic_id == topic_id).first()
+    
+    if not concept:
+        # Create a new concept if one doesn't exist
+        concept = Concept(
+            id=uuid.uuid4().hex[:10],
+            title=topic.title,
+            content=content_update.content,
+            content_telugu=content_update.content_telugu,
+            key_points=[],
+            examples=[],
+            topic_id=topic_id
+        )
+        db.add(concept)
+    else:
+        # Update existing concept
+        concept.content = content_update.content
+        concept.content_telugu = content_update.content_telugu
+    
+    db.commit()
+    db.refresh(concept)
+    return concept
 
 @router.put("/subtopic/{subtopic_id}/content", response_model=ConceptSchema)
 async def update_subtopic_content(
