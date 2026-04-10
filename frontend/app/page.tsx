@@ -143,7 +143,7 @@ export default function Dashboard() {
          <motion.div 
            initial={{ scale: 0.9, opacity: 0 }}
            animate={{ scale: 1, opacity: 1 }}
-           className="h-20 w-20 rounded-[2.5rem] bg-primary/10 flex items-center justify-center text-primary shadow-inner"
+           className="h-20 w-20 rounded-3xl bg-primary/10 flex items-center justify-center text-primary shadow-inner"
          >
             <Trophy className="h-10 w-10" />
          </motion.div>
