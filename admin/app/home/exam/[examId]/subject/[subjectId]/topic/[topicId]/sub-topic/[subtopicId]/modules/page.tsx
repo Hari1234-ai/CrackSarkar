@@ -28,7 +28,8 @@ import {
   Save,
   ChevronLeft,
   Zap,
-  Check
+  Check,
+  CheckCircle
 } from "lucide-react";
 
 import { API_URL } from "@/lib/constants";
@@ -64,6 +65,7 @@ export default function ContentEditor() {
   }, [subtopicId]);
 
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [showToast, setShowToast] = useState(false);
 
   const handleSave = async () => {
     setSaving(true);
@@ -90,11 +92,19 @@ export default function ContentEditor() {
       });
 
       if (res.ok) {
+        const savedConcept = await res.json();
+        // Update local state with saved data to ensure subsequent saves work correctly
+        if (savedConcept.modules) {
+          setModules(savedConcept.modules);
+        }
+        
         setSaveSuccess(true);
-        // BRIEF DELAY before redirect to let DB finish indexing/caching
-        setTimeout(() => {
-          router.push(`/home/exam/${examId}/subject/${subjectId}/topic/${topicId}/sub-topic`);
-        }, 1200);
+        setShowToast(true);
+        
+        // Hide success state on button after a while
+        setTimeout(() => setSaveSuccess(false), 2000);
+        // Hide toast after 3 seconds
+        setTimeout(() => setShowToast(false), 3000);
       } else {
         const errData = await res.json();
         alert(`Save failed: ${errData.detail || 'Unknown error'}`);
@@ -147,6 +157,21 @@ export default function ContentEditor() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+        {/* Toast Notification */}
+        {showToast && (
+          <div className="fixed top-8 right-8 z-[200] animate-in slide-in-from-top-full duration-500">
+             <div className="bg-[#0f172a] border border-green-500/30 rounded-2xl p-6 shadow-2xl flex items-center gap-4 min-w-[320px] backdrop-blur-xl">
+                <div className="w-10 h-10 rounded-xl bg-green-500 flex items-center justify-center text-white shadow-lg shadow-green-500/20">
+                   <CheckCircle size={20} strokeWidth={3} />
+                </div>
+                <div>
+                   <p className="text-white font-black text-sm uppercase tracking-tight">Sync Complete</p>
+                   <p className="text-gray-500 text-[10px] font-bold italic">Educational Manuscript Secured</p>
+                </div>
+             </div>
+          </div>
+        )}
+
         {/* Editor Canvas */}
         <div className="lg:col-span-8 space-y-10">
           <div className="bg-[#0d1117] border border-gray-800 rounded-[3rem] p-12 shadow-sm relative overflow-hidden">
