@@ -17,12 +17,13 @@ import { cn } from "@/lib/utils";
 export default function SubtopicsGridPage() {
   const { profile } = useUser();
   const params = useParams();
+  const examId = params.examId as string;
   const subjectId = params.subjectId as string;
   const topicId = params.topicId as string;
   
   const [hierarchy, setHierarchy] = useState<{ subject: any, topic: any } | null>(null);
   const [loading, setLoading] = useState(true);
-  const selectedExamId = profile?.exam || "Group_II";
+  const selectedExamId = examId || profile?.exam || "Group_II";
 
   useEffect(() => {
     async function fetchData() {
@@ -62,7 +63,7 @@ export default function SubtopicsGridPage() {
     return (
       <div className="text-center py-20">
         <h2 className="text-2xl font-bold">Topic not found</h2>
-        <Link href={`/study/${subjectId}`} className="text-primary hover:underline">Return to subject</Link>
+        <Link href={`/study/${selectedExamId}/subjects/${subjectId}`} className="text-primary hover:underline">Return to subject</Link>
       </div>
     );
   }
@@ -71,7 +72,7 @@ export default function SubtopicsGridPage() {
     <div className="space-y-12 pb-12 max-w-7xl mx-auto py-4">
       <header className="space-y-6">
         <Link 
-          href={`/study/${subjectId}`} 
+          href={`/study/${selectedExamId}/subjects/${subjectId}`} 
           className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors font-bold text-sm uppercase tracking-wider"
         >
           <ArrowLeft className="h-4 w-4" /> Back to {hierarchy.subject.title}
@@ -90,7 +91,7 @@ export default function SubtopicsGridPage() {
 
       <div className="space-y-4">
         {hierarchy.topic.subtopics?.map((sub: any, i: number) => (
-          <Link key={sub.id} href={`/study/${subjectId}/${topicId}/${sub.id}`}>
+          <Link key={sub.id} href={`/study/${selectedExamId}/subjects/${subjectId}/${topicId}/${sub.id}`}>
             <motion.div 
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
@@ -105,7 +106,7 @@ export default function SubtopicsGridPage() {
                  <h3 className="text-lg font-bold group-hover:text-primary transition-colors">{sub.title}</h3>
               </div>
               <div className="flex items-center gap-4">
-                 <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-50">Locked to CMS</span>
+                 <span className="text-[10px] font-black uppercase tracking-widest text-primary opacity-50">Deep Dive</span>
                  <div className="p-2 rounded-lg bg-secondary text-muted-foreground group-hover:bg-primary group-hover:text-primary-foreground transition-all">
                    <ArrowRight className="h-4 w-4" />
                  </div>

@@ -175,7 +175,7 @@ export default function Dashboard() {
                 <span className="text-xs font-black uppercase tracking-[0.2em]">Curriculum Dashboard</span>
             </div>
             <div className="flex items-center gap-4">
-              <Link href="/study">
+               <Link href={`/study/${selectedExamId}/subjects`}>
                 <motion.button 
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -197,7 +197,7 @@ export default function Dashboard() {
                 const Icon = theme.icon;
                 
                 return (
-                  <Link key={subject.id} href={`/study/${subject.id}`}>
+                  <Link key={subject.id} href={`/study/${selectedExamId}/subjects/${subject.id}`}>
                       <motion.div 
                           whileHover={{ y: -8, scale: 1.02, borderColor: theme.color }}
                           whileTap={{ scale: 0.98 }}
@@ -222,11 +222,11 @@ export default function Dashboard() {
                           </div>
                           
                           <div className="mt-8 flex items-center justify-between">
-                              <span className="text-[10px] font-black uppercase tracking-widest opacity-60" style={{ color: theme.color }}>Study Now</span>
-                              <div className="p-3 rounded-xl bg-secondary text-muted-foreground transition-all group-hover:bg-primary group-hover:text-white">
-                                  <ArrowRight className="h-5 w-5" />
-                              </div>
-                          </div>
+                               <span className="text-[10px] font-black uppercase tracking-widest opacity-60" style={{ color: theme.color }}>Study Now</span>
+                               <div className="p-3 rounded-xl bg-secondary text-muted-foreground transition-all group-hover:bg-primary group-hover:text-white">
+                                   <ArrowRight className="h-5 w-5" />
+                               </div>
+                           </div>
   
                           {/* Decoration */}
                           <div 

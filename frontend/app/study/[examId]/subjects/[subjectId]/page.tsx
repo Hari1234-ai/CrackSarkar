@@ -17,10 +17,11 @@ import { cn } from "@/lib/utils";
 export default function TopicsGridPage() {
   const { profile } = useUser();
   const params = useParams();
+  const examId = params.examId as string;
   const subjectId = params.subjectId as string;
   const [subject, setSubject] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const selectedExamId = profile?.exam || "Group_II";
+  const selectedExamId = examId || profile?.exam || "Group_II";
 
   useEffect(() => {
     async function fetchData() {
@@ -58,7 +59,7 @@ export default function TopicsGridPage() {
     return (
       <div className="text-center py-20 space-y-4">
         <h2 className="text-2xl font-bold">Subject not found</h2>
-        <Link href="/study" className="text-primary hover:underline">Return to subjects</Link>
+        <Link href={`/study/${selectedExamId}/subjects`} className="text-primary hover:underline">Return to subjects</Link>
       </div>
     );
   }
@@ -67,7 +68,7 @@ export default function TopicsGridPage() {
     <div className="space-y-12 pb-12 max-w-7xl mx-auto py-4">
       <header className="space-y-6">
         <Link 
-          href="/study" 
+          href={`/study/${selectedExamId}/subjects`} 
           className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors font-bold text-sm uppercase tracking-wider"
         >
           <ArrowLeft className="h-4 w-4" /> Back to Subjects
@@ -86,7 +87,7 @@ export default function TopicsGridPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {subject.topics?.map((topic: any, i: number) => (
-          <Link key={topic.id} href={`/study/${subjectId}/${topic.id}`}>
+          <Link key={topic.id} href={`/study/${selectedExamId}/subjects/${subjectId}/${topic.id}`}>
             <motion.div 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}

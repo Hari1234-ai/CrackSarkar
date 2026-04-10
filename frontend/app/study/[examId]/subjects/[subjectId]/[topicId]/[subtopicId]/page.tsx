@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 export default function SubtopicContentViewer() {
   const { profile } = useUser();
   const params = useParams();
+  const examId = params.examId as string;
   const subjectId = params.subjectId as string;
   const topicId = params.topicId as string;
   const subtopicId = params.subtopicId as string;
@@ -56,7 +57,7 @@ export default function SubtopicContentViewer() {
     return (
       <div className="text-center py-20">
         <h2 className="text-2xl font-bold">Content not found</h2>
-        <Link href={`/study/${subjectId}/${topicId}`} className="text-primary hover:underline">Return to list</Link>
+        <Link href={`/study/${examId}/subjects/${subjectId}/${topicId}`} className="text-primary hover:underline">Return to list</Link>
       </div>
     );
   }
@@ -74,7 +75,7 @@ export default function SubtopicContentViewer() {
         {!isFocusMode && (
           <header className="space-y-6">
             <Link 
-              href={`/study/${subjectId}/${topicId}`} 
+              href={`/study/${examId}/subjects/${subjectId}/${topicId}`} 
               className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors font-bold text-sm uppercase tracking-wider"
             >
               <ArrowLeft className="h-4 w-4" /> Back to sub-topics

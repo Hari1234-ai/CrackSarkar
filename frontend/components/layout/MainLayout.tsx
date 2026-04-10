@@ -41,11 +41,15 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
         
         <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
           {navItems.map((item) => {
-            const isActive = pathname === item.href;
+            const href = item.label === "Study" 
+              ? `/study/${profile?.exam || 'Group_II'}/subjects` 
+              : item.href;
+            const isActive = pathname === href || (item.label === "Study" && pathname.startsWith("/study"));
+            
             return (
               <Link 
                 key={item.href} 
-                href={item.href}
+                href={href}
                 className={cn(
                   "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
                   isActive 
@@ -101,11 +105,15 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
       {/* Mobile Bottom Navigation */}
       <div className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-card border-t border-border z-20 flex items-center justify-around px-2">
         {navItems.map((item) => {
-          const isActive = pathname === item.href;
+          const href = item.label === "Study" 
+            ? `/study/${profile?.exam || 'Group_II'}/subjects` 
+            : item.href;
+          const isActive = pathname === href || (item.label === "Study" && pathname.startsWith("/study"));
+          
           return (
             <Link 
               key={item.href} 
-              href={item.href}
+              href={href}
               className={cn(
                 "flex flex-col items-center justify-center w-full h-full space-y-1 mb-1 transition-colors",
                 isActive ? "text-primary" : "text-muted-foreground"
