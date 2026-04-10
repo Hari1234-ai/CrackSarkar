@@ -28,17 +28,29 @@ export default function ExamSubjectsPage() {
   const [confirmConfig, setConfirmConfig] = useState({ title: "", message: "", onConfirm: () => {} });
 
   const fetchData = async () => {
+    // 1. Prioritize core exam data (Foreground)
     setLoading(true);
     try {
       const res = await fetch(`${API_URL}/syllabus/papers/${examId}`);
-      const currentExam = await res.json();
-      setExam(currentExam);
+      if (res.ok) {
+        const data = await res.json();
+        setExam(data);
+      }
+    } catch (e) {
+      console.error("Exam Load Error:", e);
+    }
+    setLoading(false); // SKELETONS DISAPPEAR HERE (Very fast)
 
+    // 2. Fetch global subjects library in the background (Non-blocking)
+    try {
       const subRes = await fetch(`${API_URL}/syllabus/subjects/all`);
-      const subData = await subRes.json();
-      setAllGlobalSubjects(subData || []);
-    } catch (e) { console.error(e); }
-    setLoading(false);
+      if (subRes.ok) {
+        const subData = await subRes.json();
+        setAllGlobalSubjects(subData || []);
+      }
+    } catch (e) {
+      console.error("Library Background Load Error:", e);
+    }
   };
 
   useEffect(() => {

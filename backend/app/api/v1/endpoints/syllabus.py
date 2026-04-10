@@ -19,6 +19,7 @@ router = APIRouter()
 # --- FLAT GET ENDPOINTS FOR GLOBAL CMS ---
 @router.get("/papers/all", response_model=List[PaperSummary])
 def get_all_papers(db: Session = Depends(get_db)):
+    # Simple list query without relationships
     return db.query(Paper).order_by(Paper.order_index.asc()).all()
 
 @router.get("/subjects/all", response_model=List[SubjectSummary])
