@@ -119,121 +119,67 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="space-y-8 pb-8">
-      {/* Welcome Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground/90">Good morning, {profile?.name || "Aspirant"}!</h1>
-          <p className="text-muted-foreground mt-1 font-medium">
-            You're on a <span className="text-primary font-bold">{progress?.streakDays || 0} day streak</span>. Keep it up!
-          </p>
-        </div>
-        <div className="flex items-center gap-4 bg-primary/5 border border-primary/10 rounded-3xl px-6 py-4 shadow-sm">
-          <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-            <Trophy className="h-6 w-6" />
-          </div>
-          <div>
-            <div className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Overall Mastery</div>
-            <div className="text-2xl font-black text-primary">{progress?.overallCompletion || 0}%</div>
-          </div>
-        </div>
+    <div className="space-y-12 pb-12 max-w-5xl mx-auto py-8">
+      {/* Premium Welcome Header */}
+      <div className="flex flex-col items-center text-center space-y-4">
+         <motion.div 
+           initial={{ scale: 0.9, opacity: 0 }}
+           animate={{ scale: 1, opacity: 1 }}
+           className="h-20 w-20 rounded-[2.5rem] bg-primary/10 flex items-center justify-center text-primary shadow-inner"
+         >
+            <Trophy className="h-10 w-10" />
+         </motion.div>
+         <motion.div
+           initial={{ y: 20, opacity: 0 }}
+           animate={{ y: 0, opacity: 1 }}
+           transition={{ delay: 0.1 }}
+         >
+           <h1 className="text-5xl font-black tracking-tight text-foreground leading-tight">
+             Good morning, <span className="text-primary">{profile?.name || "Aspirant"}</span>!
+           </h1>
+           <p className="text-xl text-muted-foreground mt-4 font-medium max-w-2xl mx-auto">
+             Your educational journey continues today. Dive back into your syllabus and master every concept.
+           </p>
+         </motion.div>
       </div>
 
-      {/* Exam Selection Grid */}
-      <section className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-black tracking-tight flex items-center gap-2">
-            <Zap className="h-5 w-5 text-primary fill-primary" />
-            Your Target Path
-          </h2>
-          <div className="flex p-1 bg-secondary/50 rounded-xl border border-border/50">
-             <span className="px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest text-primary bg-primary/10">
-               {selectedExamId.replace("_", " ")}
-             </span>
-          </div>
-        </div>
-      </section>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Column: Today's Plan & Continue Learning */}
-        <div className="lg:col-span-2 space-y-8">
-          <section>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold flex items-center gap-2">
-                <Zap className="h-5 w-5 text-amber-500 fill-amber-500" />
-                Today's Plan
-              </h2>
-              <Link href="/daily-plan" className="text-sm font-medium text-primary hover:underline flex items-center gap-1">
-                View full schedule <ArrowRight className="h-3 w-3" />
-              </Link>
-            </div>
-            <div className="space-y-3">
-              {todayTasks.length > 0 ? todayTasks.map((task) => (
-                <DailyPlanCard key={task.id} task={task} />
-              )) : (
-                <div className="p-8 border border-dashed border-border rounded-xl text-center text-muted-foreground">
-                  No tasks generated for today.
-                </div>
-              )}
-            </div>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-semibold mb-4">Continue Learning</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {continueTopic ? (
-                <StudyCard 
-                  title={continueTopic.title}
-                  description={`Picking up where you left off in ${syllabus[0].subjects[0].title}.`}
-                  progress={40}
-                />
-              ) : (
-                <div className="p-8 border border-dashed border-border rounded-xl text-center text-muted-foreground">
-                  Start your first module today.
-                </div>
-              )}
-              <div className="hidden md:flex flex-col justify-center p-6 rounded-2xl border-2 border-dashed border-border bg-secondary/30">
-                <p className="text-sm text-center text-muted-foreground italic">
-                  "Success is the sum of small efforts, repeated day in and day out."
-                </p>
+      {/* Target Path Section */}
+      <motion.section 
+        initial={{ y: 30, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.2 }}
+        className="pt-8"
+      >
+        <div className="bg-card border-2 border-border/50 rounded-[3rem] p-12 relative overflow-hidden group">
+           <div className="absolute top-0 right-0 p-8">
+              <Zap className="h-12 w-12 text-primary/20 fill-primary/10" />
+           </div>
+           
+           <div className="relative z-10 space-y-8">
+              <div className="space-y-2">
+                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary bg-primary/10 px-4 py-2 rounded-full">Active Pathway</span>
+                <h2 className="text-4xl font-black tracking-tight">{selectedExamId.replace("_", " ")}</h2>
               </div>
-            </div>
-          </section>
-        </div>
 
-        {/* Right Column: Analytics & Highlights */}
-        <div className="space-y-8">
-          <section className="bg-card border border-border rounded-2xl p-6 shadow-sm">
-            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <Trophy className="h-5 w-5 text-primary" />
-              Progress Overview
-            </h2>
-            <ProgressChart data={chartData} height={200} />
-            <div className="mt-4 pt-4 border-t border-border flex justify-between items-center">
-              <div className="text-sm text-muted-foreground">Time studied:</div>
-              <div className="text-sm font-bold">{((progress?.totalTimeStudied || 0) / 60).toFixed(1)} hrs</div>
-            </div>
-          </section>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
+                 <Link href="/study" className="flex items-center justify-between p-8 bg-primary text-primary-foreground rounded-3xl hover:scale-[1.02] transition-all shadow-xl shadow-primary/20">
+                    <div className="space-y-1">
+                       <p className="text-lg font-black italic opacity-90 uppercase tracking-tighter">Enter Syllabus</p>
+                       <p className="text-sm font-bold opacity-80">Start Study Session</p>
+                    </div>
+                    <ArrowRight className="h-8 w-8" />
+                 </Link>
 
-          <section className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/50 rounded-2xl p-6">
-            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2 text-amber-800 dark:text-amber-400">
-              <AlertCircle className="h-5 w-5" />
-              Focus Areas
-            </h2>
-            <div className="space-y-3">
-              {(progress?.weakAreas || []).map((area: string, i: number) => (
-                <div key={i} className="flex items-center gap-2 text-sm text-amber-700 dark:text-amber-400">
-                  <div className="h-1.5 w-1.5 rounded-full bg-amber-500" />
-                  {area}
-                </div>
-              ))}
-            </div>
-            <button className="mt-6 w-full py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-sm font-medium transition-colors">
-              Start Revision Quiz
-            </button>
-          </section>
+                 <div className="p-8 bg-secondary/30 border border-border/50 rounded-3xl flex items-center justify-center text-center italic text-muted-foreground font-medium">
+                    "Success is the sum of small efforts, repeated day in and day out."
+                 </div>
+              </div>
+           </div>
+
+           {/* Decorative elements */}
+           <div className="absolute -left-12 -bottom-12 h-64 w-64 rounded-full bg-primary/5 blur-3xl" />
         </div>
-      </div>
+      </motion.section>
     </div>
   );
 }

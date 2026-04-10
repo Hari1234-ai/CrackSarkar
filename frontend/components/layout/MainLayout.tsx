@@ -21,10 +21,7 @@ import { useUser } from "@/providers/user-context";
 
 const navItems = [
   { label: "Dashboard", href: "/", icon: Home },
-  { label: "Study", href: "/study", icon: BookOpen },
-  { label: "Practice", href: "/practice", icon: Target },
-  { label: "Daily Plan", href: "/daily-plan", icon: CalendarDays },
-  { label: "Progress", href: "/progress", icon: TrendingUp },
+  { label: "Study", href: "/study", icon: BookOpen }
 ];
 
 export function MainLayout({ children }: { children: React.ReactNode }) {
