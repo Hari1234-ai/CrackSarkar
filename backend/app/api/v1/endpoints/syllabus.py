@@ -8,7 +8,8 @@ from app.schemas.schemas import (
     ConceptSchema, SubjectCreate, TopicCreate, SubtopicCreate, 
     SubjectSchema, TopicSchema, PaperCreate, BulkIds,
     PaperUpdate, SubjectUpdate, TopicUpdate, SubtopicUpdate,
-    PaperSummary, SubjectSummary, TopicSummary, SubtopicSummary
+    PaperSummary, SubjectSummary, TopicSummary, SubtopicSummary,
+    PaperDetail
 )
 # from app.services.content_generator import ContentGenerator
 import uuid
@@ -52,11 +53,10 @@ def get_syllabus_tree(exam_id: str = "Group_II", db: Session = Depends(get_db)):
     papers = query.order_by(Paper.order_index.asc()).all()
     return papers
 
-@router.get("/papers/{paper_id}", response_model=PaperSchema)
+@router.get("/papers/{paper_id}", response_model=PaperDetail)
 def get_paper(paper_id: str, db: Session = Depends(get_db)):
     paper = db.query(Paper).options(
-        selectinload(Paper.subjects).selectinload(Subject.topics).selectinload(Topic.subtopics),
-        selectinload(Paper.subjects).selectinload(Subject.topics).selectinload(Topic.concepts)
+        selectinload(Paper.subjects)
     ).filter(Paper.id == paper_id).first()
     
     if not paper:

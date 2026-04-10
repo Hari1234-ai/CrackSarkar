@@ -100,6 +100,26 @@ class PaperBase(BaseModel):
 class PaperCreate(PaperBase):
     pass
 
+class PaperSummary(BaseModel):
+    id: str
+    title: str
+    description: Optional[str] = None
+    exam_id: str
+    order_index: int = 0
+
+    class Config:
+        from_attributes = True
+
+class PaperDetail(BaseModel):
+    id: str
+    title: str
+    description: Optional[str] = None
+    exam_id: str
+    subjects: List[SubjectSummary]
+
+    class Config:
+        from_attributes = True
+
 class PaperSchema(BaseModel):
     id: str
     exam_id: str
@@ -110,9 +130,6 @@ class PaperSchema(BaseModel):
     class Config:
         from_attributes = True
 
-class PaperSummary(PaperBase):
-    exam_id: str
-    class Config:
         from_attributes = True
 
 class DailyTaskBase(BaseModel):
