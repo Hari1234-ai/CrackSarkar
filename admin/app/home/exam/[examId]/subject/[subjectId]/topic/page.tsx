@@ -32,19 +32,25 @@ export default function SubjectTopicsPage() {
     try {
       // Fetch Subject details directly (with topics)
       const subRes = await fetch(`${API_URL}/syllabus/subject/${subjectId}`);
-      const subData = await subRes.json();
-      setSubject(subData);
+      if (subRes.ok) {
+        const subData = await subRes.json();
+        setSubject(subData);
+      }
 
       // Still need exam title for breadcrumbs (optional, but keep for UX)
       const papersRes = await fetch(`${API_URL}/syllabus/papers/all`);
-      const papersData = await papersRes.json();
-      const currentExam = papersData.find((p: any) => p.id === examId);
-      setExam(currentExam);
+      if (papersRes.ok) {
+        const papersData = await papersRes.json();
+        const currentExam = papersData.find((p: any) => p.id === examId);
+        setExam(currentExam);
+      }
 
       // Fetch all global topics for the drawer
       const topRes = await fetch(`${API_URL}/syllabus/topics/all`);
-      const topData = await topRes.json();
-      setAllGlobalTopics(topData || []);
+      if (topRes.ok) {
+        const topData = await topRes.json();
+        setAllGlobalTopics(topData || []);
+      }
     } catch (e) { console.error(e); }
     setLoading(false);
   };

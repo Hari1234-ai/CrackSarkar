@@ -31,12 +31,19 @@ export default function GlobalSubjectTopicsPage() {
     try {
       // Fetch Subject details directly
       const subRes = await fetch(`${API_URL}/syllabus/subject/${subjectId}`);
-      const subData = await subRes.json();
-      setSubject(subData);
+      if (subRes.ok) {
+        const subData = await subRes.json();
+        setSubject(subData);
+      } else {
+        console.warn("Subject not found or backend still updating");
+        setSubject(null);
+      }
 
       const topRes = await fetch(`${API_URL}/syllabus/topics/all`);
-      const topData = await topRes.json();
-      setAllGlobalTopics(topData || []);
+      if (topRes.ok) {
+        const topData = await topRes.json();
+        setAllGlobalTopics(topData || []);
+      }
     } catch (e) { console.error(e); }
     setLoading(false);
   };
