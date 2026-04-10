@@ -1,0 +1,210 @@
+"use client";
+
+import React, { useEffect, useState } from "react";
+import { useUser } from "@/providers/user-context";
+import { getSubtopicDetails } from "@/lib/api";
+import { 
+  ArrowLeft, 
+  CheckCircle2, 
+  BookOpen, 
+  Languages,
+  Maximize2,
+  Minimize2,
+  ChevronRight
+} from "lucide-react";
+import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
+import { useParams } from "next/navigation";
+import { cn } from "@/lib/utils";
+
+export default function SubtopicContentViewer() {
+  const { profile } = useUser();
+  const params = useParams();
+  const subjectId = params.subjectId as string;
+  const topicId = params.topicId as string;
+  const subtopicId = params.subtopicId as string;
+  
+  const [subtopic, setSubtopic] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [language, setLanguage] = useState<"english" | "telugu">("english");
+  const [isFocusMode, setIsFocusMode] = useState(false);
+
+  useEffect(() => {
+    async function fetchData() {
+      setLoading(true);
+      try {
+        const data = await getSubtopicDetails(subtopicId);
+        setSubtopic(data);
+      } catch (error) {
+        console.error("Error fetching subtopic content:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchData();
+  }, [subtopicId]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (!subtopic) {
+    return (
+      <div className="text-center py-20">
+        <h2 className="text-2xl font-bold">Content not found</h2>
+        <Link href={`/study/${subjectId}/${topicId}`} className="text-primary hover:underline">Return to list</Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className={cn(
+      "min-h-screen pb-20 transition-all duration-500",
+      isFocusMode ? "bg-background" : "pt-4"
+    )}>
+      <div className={cn(
+        "max-w-4xl mx-auto space-y-12",
+        isFocusMode ? "pt-12" : ""
+      )}>
+        {/* Breadcrumbs & Navigation */}
+        {!isFocusMode && (
+          <header className="space-y-6">
+            <Link 
+              href={`/study/${subjectId}/${topicId}`} 
+              className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors font-bold text-sm uppercase tracking-wider"
+            >
+              <ArrowLeft className="h-4 w-4" /> Back to sub-topics
+            </Link>
+            
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground uppercase font-bold tracking-widest leading-none">
+                  <span>Study Material</span>
+                  <ChevronRight className="h-4 w-4" />
+                  <span>Interactive Manuscript</span>
+                </div>
+                <h1 className="text-5xl font-black tracking-tight">{subtopic.title}</h1>
+              </div>
+
+              <div className="flex items-center gap-4">
+                 <div className="flex items-center gap-1 bg-card border border-border rounded-xl p-1 shadow-sm">
+                   <button 
+                     onClick={() => setLanguage("english")}
+                     className={cn(
+                       "px-4 py-2 rounded-lg text-xs font-bold transition-all",
+                       language === "english" ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-secondary"
+                     )}
+                   >
+                     English
+                   </button>
+                   <button 
+                     onClick={() => setLanguage("telugu")}
+                     className={cn(
+                       "px-4 py-2 rounded-lg text-xs font-bold transition-all font-telugu",
+                       language === "telugu" ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-secondary"
+                     )}
+                   >
+                     తెలుగు
+                   </button>
+                 </div>
+
+                 <button 
+                   onClick={() => setIsFocusMode(!isFocusMode)}
+                   className="p-3 bg-secondary hover:bg-primary/10 hover:text-primary rounded-xl transition-all border border-border"
+                   title="Focus Mode"
+                 >
+                   <Maximize2 className="h-5 w-5" />
+                 </button>
+              </div>
+            </div>
+          </header>
+        )}
+
+        {isFocusMode && (
+           <div className="fixed top-8 right-8 z-50 flex items-center gap-4">
+              <div className="bg-background/80 backdrop-blur-md border border-border p-1 rounded-xl shadow-xl flex items-center gap-1">
+                 <button onClick={() => setLanguage("english")} className={cn("px-4 py-2 rounded-lg text-xs font-bold", language === "english" ? "bg-primary text-white" : "hover:bg-secondary")}>EN</button>
+                 <button onClick={() => setLanguage("telugu")} className={cn("px-4 py-2 rounded-lg text-xs font-bold font-telugu", language === "telugu" ? "bg-primary text-white" : "hover:bg-secondary")}>తె</button>
+              </div>
+              <button 
+                onClick={() => setIsFocusMode(false)}
+                className="p-3 bg-background border border-border rounded-xl shadow-xl hover:bg-secondary transition-all"
+              >
+                <Minimize2 className="h-5 w-5" />
+              </button>
+           </div>
+        )}
+
+        {/* Content Modules */}
+        <section className="space-y-12">
+           {subtopic.concepts && subtopic.concepts.length > 0 ? (
+             subtopic.concepts.map((concept: any, idx: number) => (
+               <motion.div 
+                 key={concept.id}
+                 initial={{ opacity: 0, y: 20 }}
+                 animate={{ opacity: 1, y: 0 }}
+                 transition={{ delay: idx * 0.1 }}
+                 className="bg-card border border-border/50 rounded-[3rem] p-12 shadow-sm relative group hover:border-primary/20 transition-all"
+               >
+                 <h2 className={cn(
+                   "text-3xl font-black mb-8 flex items-center gap-4",
+                   language === "telugu" && "font-telugu"
+                 )}>
+                   {concept.title}
+                   {concept.completed && <CheckCircle2 className="h-6 w-6 text-green-500" />}
+                 </h2>
+                 
+                 <div className="space-y-8">
+                    {concept.modules?.filter((m: any) => !m.lang || m.lang === (language === "english" ? "en" : "te")).map((mod: any, mIdx: number) => (
+                      <div key={mIdx}>
+                        {mod.type === 'text' && (
+                          <div className={cn(
+                            "prose prose-slate dark:prose-invert max-w-none text-xl leading-relaxed text-foreground/80 whitespace-pre-wrap",
+                            language === "telugu" && "font-telugu leading-loose"
+                          )}>
+                             {mod.content}
+                          </div>
+                        )}
+                        {mod.type === 'image' && (
+                          <div className="my-8 rounded-3xl overflow-hidden shadow-2xl border border-border">
+                             <img src={mod.url} alt="Concept visualization" className="w-full h-auto" />
+                          </div>
+                        )}
+                        {mod.type === 'video' && (
+                          <div className="my-8 rounded-3xl overflow-hidden shadow-2xl border border-border bg-black aspect-video">
+                             <video src={mod.url} controls className="w-full h-full" />
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                 </div>
+               </motion.div>
+             ))
+           ) : (
+             <div className="p-20 border-2 border-dashed border-border rounded-[3rem] text-center space-y-4">
+                <BookOpen className="h-16 w-16 text-muted-foreground mx-auto opacity-20" />
+                <p className="text-muted-foreground font-medium italic italic">No detailed academic explainers have been synced for this section yet.</p>
+             </div>
+           )}
+        </section>
+
+        {/* Next Step Hint */}
+        {!isFocusMode && (
+          <div className="bg-primary/5 border border-primary/20 rounded-[2.5rem] p-12 flex flex-col md:flex-row items-center justify-between gap-8">
+             <div className="space-y-2 text-center md:text-left">
+                <h3 className="text-2xl font-black">Knowledge Solidified?</h3>
+                <p className="text-muted-foreground text-lg">Mark this sub-topic as complete to track your progress toward mastery.</p>
+             </div>
+             <button className="px-8 py-4 bg-primary text-primary-foreground font-black rounded-2xl shadow-xl shadow-primary/20 hover:scale-105 transition-all">
+                Mark as Mastered
+             </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
