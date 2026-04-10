@@ -30,7 +30,7 @@ import {
   Zap
 } from "lucide-react";
 
-const API_URL = "http://localhost:8000/api/v1";
+import { API_URL } from "@/lib/constants";
 
 export default function GlobalContentEditor() {
   const { subtopicId } = useParams();

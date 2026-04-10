@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Search, Edit, Plus, X, PenTool, Hash, ArrowRight } from "lucide-react";
 import ConfirmModal from "@/components/ConfirmModal";
 
-const API_URL = "http://localhost:8000/api/v1";
+import { API_URL } from "@/lib/constants";
 
 export default function GlobalTopicsPage() {
   const router = useRouter();

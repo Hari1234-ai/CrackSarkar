@@ -6,7 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import { Layers, Edit, ChevronUp, ChevronDown, ArrowRight, Unlink, Plus, Search, X, Check, Box } from "lucide-react";
 import ConfirmModal from "@/components/ConfirmModal";
 
-const API_URL = "http://localhost:8000/api/v1";
+import { API_URL } from "@/lib/constants";
 
 export default function SubjectTopicsPage() {
   const { examId, subjectId } = useParams();

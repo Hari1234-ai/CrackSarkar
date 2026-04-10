@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Search, Edit, BookOpen, ArrowRight, X } from "lucide-react";
 import ConfirmModal from "@/components/ConfirmModal";
 
-const API_URL = "http://localhost:8000/api/v1";
+import { API_URL } from "@/lib/constants";
 
 export default function GlobalExamsPage() {
   const router = useRouter();

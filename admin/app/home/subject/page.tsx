@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Search, Edit, Plus, X, BookOpen, Compass, Layers, Zap, ArrowRight, Trash2 } from "lucide-react";
 import ConfirmModal from "@/components/ConfirmModal";
 
-const API_URL = "http://localhost:8000/api/v1";
+import { API_URL } from "@/lib/constants";
 
 export default function GlobalSubjectsPage() {
   const [subjects, setSubjects] = useState<any[]>([]);
