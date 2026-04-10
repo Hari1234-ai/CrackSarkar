@@ -6,6 +6,7 @@ import Image from "@tiptap/extension-image";
 import Link from "@tiptap/extension-link";
 import Underline from "@tiptap/extension-underline";
 import Placeholder from "@tiptap/extension-placeholder";
+import Youtube from "@tiptap/extension-youtube";
 import { 
   Bold, 
   Italic, 
@@ -47,6 +48,13 @@ export default function RichTextEditor({ content, onChange, placeholder }: RichT
       }),
       Placeholder.configure({
         placeholder: placeholder || 'Begin sculpting...',
+      }),
+      Youtube.configure({
+        controls: true,
+        nocookie: true,
+        HTMLAttributes: {
+          class: 'rounded-3xl border border-gray-800 my-8 shadow-3xl aspect-video w-full',
+        },
       }),
     ],
     content: content,
@@ -95,6 +103,15 @@ export default function RichTextEditor({ content, onChange, placeholder }: RichT
       } catch (err) {
         console.error("Upload failed", err);
       }
+    }
+  };
+
+  const addYoutubeVideo = () => {
+    const url = prompt('Enter YouTube URL:');
+    if (url) {
+      editor.commands.setYoutubeVideo({
+        src: url,
+      });
     }
   };
 
@@ -170,6 +187,13 @@ export default function RichTextEditor({ content, onChange, placeholder }: RichT
           onClick={() => videoInputRef.current?.click()}
           className="p-3 hover:bg-gray-800 rounded-xl transition-all text-gray-400"
           title="Insert Video"
+        >
+          <Video size={18} />
+        </button>
+        <button 
+          onClick={addYoutubeVideo}
+          className="p-3 hover:bg-gray-800 rounded-xl transition-all text-red-500"
+          title="Insert YouTube Video"
         >
           <Video size={18} />
         </button>

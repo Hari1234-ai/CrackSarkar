@@ -59,3 +59,9 @@
   }
 }
 
+
+@layer utilities {
+  .prose iframe {
+    @apply w-full aspect-video rounded-3xl border border-border shadow-2xl my-8;
+  }
+}
