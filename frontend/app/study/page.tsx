@@ -123,8 +123,8 @@ export default function StudyLandingPage() {
     <div className="space-y-12 pb-12 max-w-7xl mx-auto py-4">
       <header className="space-y-4">
         <div className="flex items-center gap-3 text-primary">
-           <GraduationCap className="h-8 w-8" />
-           <span className="text-xs font-black uppercase tracking-[0.3em] opacity-80">Syncing with CMS</span>
+           <BookOpen className="h-6 w-6" />
+           <span className="text-xs font-black uppercase tracking-[0.3em] opacity-80">Subject Catalog</span>
         </div>
         <h1 className="text-5xl font-black tracking-tight">Academic Subjects</h1>
         <p className="text-xl text-muted-foreground max-w-2xl font-medium">
