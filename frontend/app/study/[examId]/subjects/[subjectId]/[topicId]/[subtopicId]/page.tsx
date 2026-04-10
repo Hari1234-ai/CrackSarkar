@@ -151,13 +151,6 @@ export default function SubtopicContentViewer() {
                  transition={{ delay: idx * 0.1 }}
                  className="bg-card border border-border/50 rounded-[3rem] p-12 shadow-sm relative group hover:border-primary/20 transition-all"
                >
-                 <h2 className={cn(
-                   "text-3xl font-black mb-8 flex items-center gap-4",
-                   language === "telugu" && "font-telugu"
-                 )}>
-                   {concept.title}
-                   {concept.completed && <CheckCircle2 className="h-6 w-6 text-green-500" />}
-                 </h2>
                  
                  <div className="space-y-8">
                     {concept.modules?.filter((m: any) => !m.lang || m.lang === (language === "english" ? "en" : "te")).map((mod: any, mIdx: number) => (
