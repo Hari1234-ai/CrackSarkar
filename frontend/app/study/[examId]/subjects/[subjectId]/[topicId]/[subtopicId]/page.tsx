@@ -163,21 +163,30 @@ export default function SubtopicContentViewer() {
                     {concept.modules?.filter((m: any) => !m.lang || m.lang === (language === "english" ? "en" : "te")).map((mod: any, mIdx: number) => (
                       <div key={mIdx}>
                         {mod.type === 'text' && (
-                          <div className={cn(
-                            "prose prose-slate dark:prose-invert max-w-none text-xl leading-relaxed text-foreground/80 whitespace-pre-wrap",
-                            language === "telugu" && "font-telugu leading-loose"
-                          )}>
-                             {mod.content}
-                          </div>
+                          <div 
+                            className={cn(
+                              "prose prose-slate dark:prose-invert max-w-none text-xl leading-relaxed text-foreground/80",
+                              language === "telugu" && "font-telugu leading-loose"
+                            )}
+                            dangerouslySetInnerHTML={{ __html: mod.content }}
+                          />
                         )}
                         {mod.type === 'image' && (
                           <div className="my-8 rounded-3xl overflow-hidden shadow-2xl border border-border">
-                             <img src={mod.url} alt="Concept visualization" className="w-full h-auto" />
+                             <img 
+                               src={mod.url.startsWith('http') ? mod.url : `http://localhost:8000${mod.url}`} 
+                               alt="Concept visualization" 
+                               className="w-full h-auto" 
+                             />
                           </div>
                         )}
                         {mod.type === 'video' && (
                           <div className="my-8 rounded-3xl overflow-hidden shadow-2xl border border-border bg-black aspect-video">
-                             <video src={mod.url} controls className="w-full h-full" />
+                             <video 
+                               src={mod.url.startsWith('http') ? mod.url : `http://localhost:8000${mod.url}`} 
+                               controls 
+                               className="w-full h-full" 
+                             />
                           </div>
                         )}
                       </div>
