@@ -190,10 +190,17 @@ export default function SubtopicContentViewer() {
                                />
                              ) : (
                                <video 
-                                 src={mod.url.startsWith('http') ? mod.url : `http://localhost:8000${mod.url}`} 
                                  controls 
-                                 className="w-full h-full" 
-                               />
+                                 playsInline
+                                 preload="metadata"
+                                 className="w-full h-full"
+                               >
+                                 <source 
+                                   src={mod.url.startsWith('http') ? mod.url : `http://localhost:8000${mod.url}`} 
+                                   type="video/mp4" 
+                                 />
+                                 Your browser does not support the video tag.
+                               </video>
                              )}
                           </div>
                         )}

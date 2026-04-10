@@ -128,24 +128,25 @@ export default function AudioPlayer({ url, title = "Audio Explanation", themeCol
 
       <div className="mt-8 space-y-4">
         {/* Progress Bar */}
-        <div className="relative group">
+        <div className="relative w-full h-1.5 bg-secondary rounded-full overflow-hidden">
+          <div 
+            className="absolute top-0 left-0 h-full transition-all duration-100"
+            style={{ 
+              width: `${duration ? (currentTime / duration) * 100 : 0}%`,
+              backgroundColor: themeColor 
+            }}
+          />
           <input
             type="range"
             min="0"
             max={duration || 0}
             value={currentTime}
             onChange={onSeek}
-            className="w-full h-1.5 bg-secondary rounded-full appearance-none cursor-pointer accent-current"
-            style={{ color: themeColor }}
-          />
-          <div 
-            className="absolute top-0 left-0 h-1.5 rounded-full pointer-events-none transition-all"
-            style={{ 
-              width: `${(currentTime / duration) * 100}%`,
-              backgroundColor: themeColor 
-            }}
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
           />
         </div>
+
+        {/* Custom Thumb indicator (optional, but let's keep it simple and clean first) */}
 
         {/* Playback Controls */}
         <div className="flex items-center justify-between">
