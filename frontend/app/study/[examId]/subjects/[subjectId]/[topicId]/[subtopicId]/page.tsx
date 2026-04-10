@@ -175,11 +175,19 @@ export default function SubtopicContentViewer() {
                         )}
                         {mod.type === 'video' && (
                           <div className="my-8 rounded-3xl overflow-hidden shadow-2xl border border-border bg-black aspect-video">
-                             <video 
-                               src={mod.url.startsWith('http') ? mod.url : `http://localhost:8000${mod.url}`} 
-                               controls 
-                               className="w-full h-full" 
-                             />
+                             {mod.url.includes('youtube.com') || mod.url.includes('youtu.be') ? (
+                               <iframe
+                                 src={mod.url.replace('watch?v=', 'embed/').split('&')[0]}
+                                 className="w-full h-full"
+                                 allowFullScreen
+                               />
+                             ) : (
+                               <video 
+                                 src={mod.url.startsWith('http') ? mod.url : `http://localhost:8000${mod.url}`} 
+                                 controls 
+                                 className="w-full h-full" 
+                               />
+                             )}
                           </div>
                         )}
                       </div>
