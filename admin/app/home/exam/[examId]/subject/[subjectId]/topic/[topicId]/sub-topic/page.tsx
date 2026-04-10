@@ -32,21 +32,30 @@ export default function TopicSubtopicsPage() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/syllabus/papers/all`);
-      const data = await res.json();
-      const currentExam = data.find((p: any) => p.id === examId);
-      setExam(currentExam);
-      
-      const currentSubject = currentExam?.subjects.find((s: any) => String(s.id) === String(subjectId));
-      setSubject(currentSubject);
+      // 1. Fetch Topic details directly (includes subtopics)
+      const topRes = await fetch(`${API_URL}/syllabus/topic/${topicId}`);
+      if (topRes.ok) {
+        const topData = await topRes.json();
+        setTopic(topData);
+      }
 
-      const currentTopic = currentSubject?.topics.find((t: any) => String(t.id) === String(topicId));
-      setTopic(currentTopic);
+      // 2. Fetch context items for breadcrumbs
+      const papersRes = await fetch(`${API_URL}/syllabus/papers/all`);
+      if (papersRes.ok) {
+        const papersData = await papersRes.json();
+        const currentExam = papersData.find((p: any) => p.id === examId);
+        setExam(currentExam);
+        
+        const currentSubject = currentExam?.subjects?.find((s: any) => String(s.id) === String(subjectId));
+        setSubject(currentSubject);
+      }
 
       const stRes = await fetch(`${API_URL}/syllabus/subtopics/all`);
       const stData = await stRes.json();
       setAllGlobalSubtopics(stData || []);
-    } catch (e) { console.error(e); }
+    } catch (e) {
+      console.error("Hydration Error:", e);
+    }
     setLoading(false);
   };
 
