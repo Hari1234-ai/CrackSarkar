@@ -9,7 +9,6 @@ const nextConfig = {
     // ESLint warnings are reviewed locally. This prevents build failure on lint warnings.
     ignoreDuringBuilds: true,
   },
-  basePath: '/cracksarkar',
 };
 
 export default nextConfig;
