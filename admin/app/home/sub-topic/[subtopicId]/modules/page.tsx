@@ -9,9 +9,8 @@ import {
   Type,
   Music,
   Trash2,
-  Upload,
   CheckCircle2,
-  AlertCircle
+  Volume2
 } from "lucide-react";
 
 import { API_URL } from "@/lib/constants";
@@ -25,13 +24,16 @@ export default function GlobalContentEditor() {
   const [title, setTitle] = useState("");
   const [contentEn, setContentEn] = useState("");
   const [contentTe, setContentTe] = useState("");
-  const [audioUrl, setAudioUrl] = useState("");
+  const [audioEnUrl, setAudioEnUrl] = useState("");
+  const [audioTeUrl, setAudioTeUrl] = useState("");
   
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [uploadingAudio, setUploadingAudio] = useState(false);
+  const [uploadingAudioEn, setUploadingAudioEn] = useState(false);
+  const [uploadingAudioTe, setUploadingAudioTe] = useState(false);
   
-  const audioInputRef = useRef<HTMLInputElement>(null);
+  const audioEnInputRef = useRef<HTMLInputElement>(null);
+  const audioTeInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     async function fetchData() {
@@ -46,17 +48,22 @@ export default function GlobalContentEditor() {
             
             const enMod = mods.find((m: any) => m.type === "text" && m.lang === "en");
             const teMod = mods.find((m: any) => m.type === "text" && m.lang === "te");
-            const audioMod = mods.find((m: any) => m.type === "audio");
+            const audioEn = mods.find((m: any) => m.type === "audio" && m.lang === "en");
+            const audioTe = mods.find((m: any) => m.type === "audio" && m.lang === "te");
             
-            // Fallback for legacy data without lang tags
+            // Fallback for legacy data
             if (enMod) setContentEn(enMod.content);
-            else {
-               const legacyMod = mods.find((m: any) => m.type === "text" && !m.lang);
-               if (legacyMod) setContentEn(legacyMod.content);
+            else if (mods.find((m: any) => m.type === "text" && !m.lang)) {
+               setContentEn(mods.find((m: any) => m.type === "text" && !m.lang).content);
             }
             
             if (teMod) setContentTe(teMod.content);
-            if (audioMod) setAudioUrl(audioMod.url);
+            if (audioEn) setAudioEnUrl(audioEn.url);
+            else if (mods.find((m: any) => m.type === "audio" && !m.lang)) {
+               setAudioEnUrl(mods.find((m: any) => m.type === "audio" && !m.lang).url);
+            }
+            
+            if (audioTe) setAudioTeUrl(audioTe.url);
           }
         }
       } catch (e) { console.error(e); }
@@ -65,31 +72,36 @@ export default function GlobalContentEditor() {
     fetchData();
   }, [subtopicId]);
 
-  const handleAudioUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setUploadingAudio(true);
-      try {
-        const url = await uploadFile(file);
-        setAudioUrl(url);
-      } catch (err) {
-        console.error("Audio upload failed", err);
-      }
-      setUploadingAudio(false);
+  const handleAudioUpload = async (file: File, lang: 'en' | 'te') => {
+    if (lang === 'en') setUploadingAudioEn(true);
+    else setUploadingAudioTe(true);
+
+    try {
+      const url = await uploadFile(file);
+      if (lang === 'en') setAudioEnUrl(url);
+      else setAudioTeUrl(url);
+    } catch (err) {
+      console.error("Audio upload failed", err);
     }
+
+    if (lang === 'en') setUploadingAudioEn(false);
+    else setUploadingAudioTe(false);
   };
 
   const handleSave = async () => {
     setSaving(true);
     
-    // Construct modules array with both languages and audio
+    // Construct modules array with both languages and respective audio
     const updatedModules: any[] = [
       { type: "text", lang: "en", content: contentEn },
       { type: "text", lang: "te", content: contentTe }
     ];
 
-    if (audioUrl) {
-      updatedModules.push({ type: "audio", url: audioUrl });
+    if (audioEnUrl) {
+      updatedModules.push({ type: "audio", lang: "en", url: audioEnUrl });
+    }
+    if (audioTeUrl) {
+      updatedModules.push({ type: "audio", lang: "te", url: audioTeUrl });
     }
 
     try {
@@ -102,6 +114,45 @@ export default function GlobalContentEditor() {
     } catch (e) { console.error(e); }
     setSaving(false);
   };
+
+  const CompactAudioCard = ({ url, onClear, onUploadTrigger, uploading, label }: any) => (
+    <div className={`mt-8 p-6 rounded-3xl border transition-all flex items-center justify-between gap-6 ${
+      url ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-gray-800 bg-black/5'
+    }`}>
+      <div className="flex items-center gap-4">
+        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all ${
+          url ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20' : 'bg-[#161b22] border border-gray-800 text-gray-700'
+        }`}>
+          {url ? <Volume2 size={24} /> : <Music size={24} />}
+        </div>
+        <div>
+          <p className={`font-black text-sm uppercase tracking-wider ${url ? 'text-emerald-400' : 'text-gray-600'}`}>
+            {label} Audio Narrative
+          </p>
+          {url ? (
+            <p className="text-[10px] text-gray-500 font-bold truncate max-w-xs">{url.split('/').pop()}</p>
+          ) : (
+            <p className="text-[10px] text-gray-800 font-bold uppercase tracking-widest italic">No archive attached</p>
+          )}
+        </div>
+      </div>
+
+      <div className="flex items-center gap-4">
+        {url && <audio src={url} controls className="h-8 max-w-[200px]" />}
+        <button 
+          onClick={url ? onClear : onUploadTrigger}
+          disabled={uploading}
+          className={`px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all ${
+            url 
+              ? 'text-red-500/50 hover:text-red-500 hover:bg-red-500/5 border border-transparent hover:border-red-500/10' 
+              : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500 hover:text-white'
+          }`}
+        >
+          {uploading ? "Uploading..." : url ? <Trash2 size={16} /> : "Upload Audio"}
+        </button>
+      </div>
+    </div>
+  );
 
   if (loading) return (
     <div className="flex items-center justify-center py-32">
@@ -141,100 +192,61 @@ export default function GlobalContentEditor() {
         </button>
       </div>
 
-      <div className="space-y-12">
-        {/* English Editor */}
+      <div className="space-y-16">
+        {/* English Section */}
         <div className="bg-[#0d1117] border border-gray-800 rounded-[3rem] p-12 shadow-sm relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-[#6366f1] opacity-[0.02] blur-3xl -mr-32 -mt-32"></div>
           
           <div className="flex items-center justify-between mb-10">
-             <h2 className="text-xl font-black flex items-center gap-4 italic uppercase tracking-tight">
-                <Type size={24} className="text-[#6366f1]" />
-                English Content (UK/US Std)
+             <h2 className="text-xl font-black flex items-center gap-4 italic uppercase tracking-tight text-[#6366f1]">
+                <Type size={24} />
+                English Content
              </h2>
-             <span className="text-[10px] font-black py-1 px-4 bg-indigo-500/10 text-[#6366f1] rounded-full tracking-[0.2em] border border-indigo-500/10 uppercase">Primary Language</span>
+             <span className="text-[10px] font-black py-1 px-4 bg-indigo-500/10 text-[#6366f1] rounded-full tracking-[0.2em] border border-indigo-500/10 uppercase italic">Primary Manuscript</span>
           </div>
           
           <RichTextEditor 
             content={contentEn} 
             onChange={setContentEn} 
-            placeholder="Write in English..." 
+            placeholder="Write English narrative..." 
           />
+
+          <CompactAudioCard 
+            url={audioEnUrl} 
+            label="English"
+            onClear={() => setAudioEnUrl("")}
+            onUploadTrigger={() => audioEnInputRef.current?.click()}
+            uploading={uploadingAudioEn}
+          />
+          <input type="file" ref={audioEnInputRef} hidden accept="audio/*" onChange={(e) => e.target.files?.[0] && handleAudioUpload(e.target.files[0], 'en')} />
         </div>
 
-        {/* Telugu Editor */}
+        {/* Telugu Section */}
         <div className="bg-[#0d1117] border border-gray-800 rounded-[3rem] p-12 shadow-sm relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500 opacity-[0.02] blur-3xl -mr-32 -mt-32"></div>
           
           <div className="flex items-center justify-between mb-10">
              <h2 className="text-xl font-black flex items-center gap-4 italic uppercase tracking-tight text-orange-400">
                 <Type size={24} />
-                తెలుగు కంటెంట్ (Telugu)
+                తెలుగు కంటెంట్
              </h2>
-             <span className="text-[10px] font-black py-1 px-4 bg-orange-500/10 text-orange-400 rounded-full tracking-[0.2em] border border-orange-500/10 uppercase">Regional Language</span>
+             <span className="text-[10px] font-black py-1 px-4 bg-orange-500/10 text-orange-400 rounded-full tracking-[0.2em] border border-orange-500/10 uppercase italic">Regional Manuscript</span>
           </div>
           
           <RichTextEditor 
             content={contentTe} 
             onChange={setContentTe} 
-            placeholder="తెలుగులో వ్రాయండి..." 
+            placeholder="తెలుగు వివరణ రాయండి..." 
           />
-        </div>
 
-        {/* Audio Upload */}
-        <div className="bg-[#0d1117] border border-gray-800 rounded-[3rem] p-12 shadow-sm relative overflow-hidden">
-           <div className="flex items-center justify-between mb-8">
-              <h2 className="text-xl font-black flex items-center gap-4 italic uppercase tracking-tight text-emerald-400">
-                <Music size={24} />
-                Audio Narrative Archive
-              </h2>
-           </div>
-
-           <div className={`p-10 rounded-[2.5rem] border border-dashed transition-all flex flex-col items-center justify-center gap-6 ${
-             audioUrl ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-gray-800 bg-black/10'
-           }`}>
-             {audioUrl ? (
-               <>
-                 <div className="w-16 h-16 rounded-2xl bg-emerald-500 flex items-center justify-center text-white shadow-xl shadow-emerald-500/20">
-                    <CheckCircle2 size={32} />
-                 </div>
-                 <div className="text-center">
-                    <p className="font-black text-xl text-emerald-400 mb-2 uppercase italic">Audio Narrative Active</p>
-                    <p className="text-gray-500 font-bold text-sm truncate max-w-md italic">{audioUrl}</p>
-                 </div>
-                 <audio controls src={audioUrl} className="mt-4 appearance-none" />
-                 <button 
-                   onClick={() => setAudioUrl("")}
-                   className="mt-4 text-red-500/60 hover:text-red-500 font-black text-[10px] uppercase tracking-widest flex items-center gap-2"
-                 >
-                   <Trash2 size={14} /> Remove Audio
-                 </button>
-               </>
-             ) : (
-               <>
-                 <div className="w-20 h-20 rounded-[2rem] bg-[#161b22] border border-gray-800 flex items-center justify-center text-gray-700 animate-pulse">
-                    <Music size={40} />
-                 </div>
-                 <div className="text-center">
-                   <p className="text-gray-400 font-black text-lg mb-1 italic">No Audio Narrative Attached</p>
-                   <p className="text-gray-600 font-bold text-xs uppercase tracking-widest">WAV / MP3 / M4A Supported</p>
-                 </div>
-                 <button 
-                   onClick={() => audioInputRef.current?.click()}
-                   disabled={uploadingAudio}
-                   className="mt-4 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-8 py-4 rounded-2xl font-black text-sm hover:bg-emerald-500 hover:text-white transition-all shadow-lg active:scale-95"
-                 >
-                   {uploadingAudio ? "Uploading Archive..." : "Upload New Narrative"}
-                 </button>
-               </>
-             )}
-             <input 
-               type="file" 
-               ref={audioInputRef} 
-               hidden 
-               accept="audio/*" 
-               onChange={handleAudioUpload} 
-             />
-           </div>
+          <CompactAudioCard 
+            url={audioTeUrl} 
+            label="Telugu"
+            onClear={() => setAudioTeUrl("")}
+            onUploadTrigger={() => audioTeInputRef.current?.click()}
+            uploading={uploadingAudioTe}
+          />
+          <input type="file" ref={audioTeInputRef} hidden accept="audio/*" onChange={(e) => e.target.files?.[0] && handleAudioUpload(e.target.files[0], 'te')} />
         </div>
       </div>
     </div>
