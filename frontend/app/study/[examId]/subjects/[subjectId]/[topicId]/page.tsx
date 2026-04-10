@@ -13,6 +13,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { useParams } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { subjectThemes, defaultTheme } from "@/lib/constants";
 
 export default function SubtopicsGridPage() {
   const { profile } = useUser();
@@ -67,6 +68,9 @@ export default function SubtopicsGridPage() {
       </div>
     );
   }
+  
+  const theme = hierarchy.subject ? (subjectThemes[hierarchy.subject.title.toUpperCase()] || defaultTheme) : defaultTheme;
+  const SubjectIcon = theme.icon;
 
   return (
     <div className="space-y-12 pb-12 max-w-7xl mx-auto py-4">
@@ -78,8 +82,8 @@ export default function SubtopicsGridPage() {
           <ArrowLeft className="h-4 w-4" /> Back to {hierarchy.subject.title}
         </Link>
         <div className="space-y-2">
-            <div className="flex items-center gap-2 text-primary">
-                <GitBranch className="h-6 w-6" />
+            <div className="flex items-center gap-2" style={{ color: theme.color }}>
+                <SubjectIcon className="h-6 w-6" />
                 <span className="text-xs font-black uppercase tracking-[0.2em]">{hierarchy.topic.title}</span>
             </div>
             <h1 className="text-5xl font-black tracking-tight">Technical Sub-topics</h1>
@@ -100,13 +104,16 @@ export default function SubtopicsGridPage() {
               className="group p-6 rounded-2xl bg-card border border-border/50 hover:border-primary/40 transition-all shadow-sm flex items-center justify-between"
             >
               <div className="flex items-center gap-6">
-                 <div className="h-10 w-10 rounded-full bg-primary/5 flex items-center justify-center text-primary font-black text-xs">
+                 <div 
+                  className="h-10 w-10 rounded-full flex items-center justify-center font-black text-xs transition-colors"
+                  style={{ backgroundColor: theme.bg, color: theme.color }}
+                 >
                     {i + 1}
                  </div>
-                 <h3 className="text-lg font-bold group-hover:text-primary transition-colors">{sub.title}</h3>
+                 <h3 className="text-lg font-black group-hover:text-primary transition-colors" style={{ '--hover-color': theme.color } as any}>{sub.title}</h3>
               </div>
               <div className="flex items-center gap-4">
-                 <span className="text-[10px] font-black uppercase tracking-widest text-primary opacity-50">Deep Dive</span>
+                 <span className="text-[10px] font-black uppercase tracking-widest opacity-50" style={{ color: theme.color }}>Deep Dive</span>
                  <div className="p-2 rounded-lg bg-secondary text-muted-foreground group-hover:bg-primary group-hover:text-primary-foreground transition-all">
                    <ArrowRight className="h-4 w-4" />
                  </div>

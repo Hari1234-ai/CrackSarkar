@@ -13,6 +13,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { useParams } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { subjectThemes, defaultTheme } from "@/lib/constants";
 
 export default function TopicsGridPage() {
   const { profile } = useUser();
@@ -64,6 +65,9 @@ export default function TopicsGridPage() {
     );
   }
 
+  const theme = subject ? (subjectThemes[subject.title.toUpperCase()] || defaultTheme) : defaultTheme;
+  const SubjectIcon = theme.icon;
+
   return (
     <div className="space-y-12 pb-12 max-w-7xl mx-auto py-4">
       <header className="space-y-6">
@@ -74,8 +78,8 @@ export default function TopicsGridPage() {
           <ArrowLeft className="h-4 w-4" /> Back to Subjects
         </Link>
         <div className="space-y-2">
-            <div className="flex items-center gap-2 text-primary">
-                <Layers className="h-6 w-6" />
+            <div className="flex items-center gap-2" style={{ color: theme.color }}>
+                <SubjectIcon className="h-6 w-6" />
                 <span className="text-xs font-black uppercase tracking-[0.2em]">{subject.title}</span>
             </div>
             <h1 className="text-5xl font-black tracking-tight">Select a Topic</h1>
@@ -92,19 +96,25 @@ export default function TopicsGridPage() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05 }}
-              whileHover={{ scale: 1.02 }}
-              className="group p-8 rounded-[2.5rem] bg-card border border-border/50 hover:border-primary/40 transition-all shadow-sm flex flex-col justify-between h-full"
+              whileHover={{ scale: 1.02, borderColor: theme.color }}
+              className="group p-8 rounded-[2.5rem] bg-card border transition-all shadow-sm flex flex-col justify-between h-full"
+              style={{ borderColor: "rgba(0,0,0,0.05)" }}
             >
               <div className="space-y-4">
-                <div className="h-12 w-12 rounded-xl bg-primary/5 flex items-center justify-center text-primary group-hover:bg-primary/10 transition-colors">
+                <div 
+                  className="h-12 w-12 rounded-xl flex items-center justify-center transition-colors shadow-inner"
+                  style={{ backgroundColor: theme.bg, color: theme.color }}
+                >
                    <span className="font-black text-lg">{i + 1}</span>
                 </div>
-                <h3 className="text-xl font-bold tracking-tight">{topic.title}</h3>
+                <h3 className="text-xl font-black tracking-tight uppercase" style={{ color: theme.color }}>{topic.title}</h3>
               </div>
               
               <div className="mt-8 flex items-center justify-between">
                 <span className="text-[10px] font-bold text-muted-foreground uppercase">{topic.subtopics?.length || 0} Sub-topics</span>
-                <div className="p-2 rounded-lg bg-secondary text-muted-foreground group-hover:bg-primary group-hover:text-primary-foreground transition-all">
+                <div 
+                  className="p-2 rounded-lg bg-secondary text-muted-foreground transition-all group-hover:bg-primary group-hover:text-primary-foreground"
+                >
                   <ArrowRight className="h-4 w-4" />
                 </div>
               </div>
