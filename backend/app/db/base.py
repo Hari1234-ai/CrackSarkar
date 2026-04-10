@@ -91,7 +91,7 @@ class Concept(Base):
 
 class UserProgress(Base):
     __tablename__ = "user_progress"
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(String, primary_key=True, index=True)
     user_id = Column(String, index=True)
     item_id = Column(String, index=True)  # Can be topic_id or concept_id
     item_type = Column(String)           # topic, concept
@@ -102,7 +102,7 @@ class UserProgress(Base):
 
 class DailyPlan(Base):
     __tablename__ = "daily_plans"
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(String, primary_key=True, index=True)
     date = Column(DateTime, default=datetime.utcnow, index=True)
     user_id = Column(String, index=True)
     overall_progress = Column(Float, default=0.0)

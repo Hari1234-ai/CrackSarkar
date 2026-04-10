@@ -9,6 +9,25 @@ from .db.base import Base
 # Create database tables
 Base.metadata.create_all(bind=engine)
 
+# Auto-seed initial exams if empty (for production migration)
+from .db.session import SessionLocal
+from .db.base import Paper
+db = SessionLocal()
+try:
+    if not db.query(Paper).first():
+        print("Seeding production database with initial exams...")
+        exams = [
+            Paper(id="Group_II", title="TSPSC Group II", exam_id="Group_II", description="Executive and Non-Executive Posts", order_index=1),
+            Paper(id="Group_III", title="TSPSC Group III", exam_id="Group_III", description="Senior Accountant and Auditor Posts", order_index=2),
+            Paper(id="Group_IV", title="TSPSC Group IV", exam_id="Group_IV", description="Junior Assistant and Typist Posts", order_index=3),
+        ]
+        db.add_all(exams)
+        db.commit()
+except Exception as e:
+    print(f"Seed error: {e}")
+finally:
+    db.close()
+
 app = FastAPI(
     title="CrackSarkar API",
     description="Backend for AI-powered CrackSarkar exam preparation platform",
