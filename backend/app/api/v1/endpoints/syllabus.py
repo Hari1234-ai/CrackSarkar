@@ -16,6 +16,14 @@ import uuid
 
 router = APIRouter()
 
+@router.post("/force-repair")
+def force_syllabus_repair(db: Session = Depends(get_db)):
+    from app.main import perform_syllabus_repair
+    success = perform_syllabus_repair(db)
+    if not success:
+        raise HTTPException(status_code=500, detail="Syllabus repair failed")
+    return {"message": "Syllabus hierarchy synchronized successfully"}
+
 # --- FLAT GET ENDPOINTS FOR GLOBAL CMS ---
 @router.get("/papers/all", response_model=List[PaperSummary])
 def get_all_papers(db: Session = Depends(get_db)):

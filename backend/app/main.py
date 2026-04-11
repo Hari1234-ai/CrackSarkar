@@ -14,38 +14,49 @@ from .db.base import Base
 Base.metadata.create_all(bind=engine)
 
 # Auto-seed initial exams if empty (for production migration)
-# Self-healing: Auto-seed high-fidelity hierarchy if database is empty
+# --- Robust Syllabus Seeding & Repair ---
 from .db.session import SessionLocal
-from .db.base import Paper, Subject, Topic, Subtopic, paper_subject_association
+from .db.base import Paper, Subject, Topic, Subtopic, paper_subject_association, subject_topic_association
 
-def auto_seed_if_empty():
-    db = SessionLocal()
+def perform_syllabus_repair(db):
+    """Force a clean, high-fidelity restoration of the syllabus hierarchy."""
     try:
-        # Check for Papers instead of the whole tree for speed
-        if db.query(Paper).first():
-            return
-
-        print("🚀 [CRITICAL] Database empty. Auto-seeding high-fidelity syllabus...")
+        print("🚀 [REPAIR] Starting full syllabus hierarchy sync...")
         
-        # High-level Papers
-        papers = [
-            Paper(id="P1", title="Paper I - General Studies & General Abilities", exam_id="Group_II", order_index=1),
-            Paper(id="P2", title="Paper II - History, Polity & Society", exam_id="Group_II", order_index=2),
-            Paper(id="P3", title="Paper III - Economy & Development", exam_id="Group_II", order_index=3),
-            Paper(id="P4", title="Paper IV - Telangana Movement & State Formation", exam_id="Group_II", order_index=4),
+        # 1. High-level Papers
+        paper_data = [
+            ("P1", "Paper I - General Studies & General Abilities", 1),
+            ("P2", "Paper II - History, Polity & Society", 2),
+            ("P3", "Paper III - Economy & Development", 3),
+            ("P4", "Paper IV - Telangana Movement & State Formation", 4),
         ]
-        db.add_all(papers)
+        
+        for pid, title, idx in paper_data:
+            p = db.query(Paper).filter(Paper.id == pid).first()
+            if not p:
+                p = Paper(id=pid, title=title, exam_id="Group_II", order_index=idx)
+                db.add(p)
+            else:
+                p.title = title
+                p.order_index = idx
         db.flush()
 
-        # Paper I: General Studies Section
-        gs_section = Subject(id="P1-S1", title="General Studies", order_index=1)
-        db.add(gs_section)
+        # 2. Paper I: General Studies Section
+        gs_section = db.query(Subject).filter(Subject.id == "P1-S1").first()
+        if not gs_section:
+            gs_section = Subject(id="P1-S1", title="General Studies", order_index=1)
+            db.add(gs_section)
         db.flush()
         
         # Link Section to Paper I
-        db.execute(paper_subject_association.insert().values(paper_id="P1", subject_id="P1-S1"))
+        link = db.execute(paper_subject_association.select().where(
+            paper_subject_association.c.paper_id == "P1",
+            paper_subject_association.c.subject_id == "P1-S1"
+        )).first()
+        if not link:
+            db.execute(paper_subject_association.insert().values(paper_id="P1", subject_id="P1-S1"))
 
-        # Paper I Topics
+        # 3. Paper I Topics
         p1_topics = [
             "National & International Important Events",
             "Current Affairs (Regional, National & International)",
@@ -62,34 +73,63 @@ def auto_seed_if_empty():
             "Basic English"
         ]
         for idx, title in enumerate(p1_topics, 1):
-            t = Topic(id=f"P1-S1-T{idx}", title=title, order_index=idx, weightage="High")
-            db.add(t)
-            db.flush()
+            tid = f"P1-S1-T{idx}"
+            t = db.query(Topic).filter(Topic.id == tid).first()
+            if not t:
+                t = Topic(id=tid, title=title, order_index=idx, weightage="High")
+                db.add(t)
+                db.flush()
+            
             # Link Topic to Subject
-            from .db.base import subject_topic_association
-            db.execute(subject_topic_association.insert().values(subject_id="P1-S1", topic_id=t.id))
+            t_link = db.execute(subject_topic_association.select().where(
+                subject_topic_association.c.subject_id == "P1-S1",
+                subject_topic_association.c.topic_id == tid
+            )).first()
+            if not t_link:
+                db.execute(subject_topic_association.insert().values(subject_id="P1-S1", topic_id=tid))
 
-        # Paper II: Core Sections
+        # 4. Paper II Sections
         p2_sections = {
             "P2-S1": "History",
             "P2-S2": "Indian Constitution & Politics",
             "P2-S3": "Social Structure & Issues"
         }
         for sid, title in p2_sections.items():
-            s = Subject(id=sid, title=title, order_index=1)
-            db.add(s)
-            db.flush()
-            db.execute(paper_subject_association.insert().values(paper_id="P2", subject_id=sid))
+            s = db.query(Subject).filter(Subject.id == sid).first()
+            if not s:
+                s = Subject(id=sid, title=title, order_index=1)
+                db.add(s)
+                db.flush()
+            
+            s_link = db.execute(paper_subject_association.select().where(
+                paper_subject_association.c.paper_id == "P2",
+                paper_subject_association.c.subject_id == sid
+            )).first()
+            if not s_link:
+                db.execute(paper_subject_association.insert().values(paper_id="P2", subject_id=sid))
 
         db.commit()
-        print("✅ [SUCCESS] Production database self-healed with high-fidelity syllabus.")
+        print("✅ [SUCCESS] Syllabus hierarchy synchronized.")
+        return True
     except Exception as e:
         db.rollback()
-        print(f"❌ [ERROR] Auto-seed failed: {e}")
+        print(f"❌ [ERROR] Syllabus repair failed: {e}")
+        return False
+
+def auto_repair_on_startup():
+    db = SessionLocal()
+    try:
+        # Check if Paper I has its subject linked
+        has_links = db.execute(paper_subject_association.select().where(
+            paper_subject_association.c.paper_id == "P1"
+        )).first()
+        
+        if not has_links:
+            perform_syllabus_repair(db)
     finally:
         db.close()
 
-auto_seed_if_empty()
+auto_repair_on_startup()
 
 app = FastAPI(
     title="CrackSarkar API",
