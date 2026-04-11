@@ -42,6 +42,11 @@ class SubtopicSchema(SubtopicBase):
     class Config:
         from_attributes = True
 
+class SubtopicTreeSchema(SubtopicBase):
+    """Lightweight schema for tree navigation without heavy content."""
+    class Config:
+        from_attributes = True
+
 class SubtopicSummary(SubtopicBase):
     class Config:
         from_attributes = True
@@ -68,6 +73,12 @@ class TopicSchema(TopicBase):
     class Config:
         from_attributes = True
 
+class TopicTreeSchema(TopicBase):
+    """Lightweight schema for tree navigation without heavy content."""
+    subtopics: List[SubtopicTreeSchema]
+    class Config:
+        from_attributes = True
+
 class TopicSummary(TopicBase):
     class Config:
         from_attributes = True
@@ -85,6 +96,12 @@ class SubjectCreate(BaseModel):
 
 class SubjectSchema(SubjectBase):
     topics: List[TopicSchema]
+    class Config:
+        from_attributes = True
+
+class SubjectTreeSchema(SubjectBase):
+    """Lightweight schema for tree navigation without heavy content."""
+    topics: List[TopicTreeSchema]
     class Config:
         from_attributes = True
 
@@ -117,6 +134,17 @@ class PaperDetail(BaseModel):
     exam_id: str
     subjects: List[SubjectSummary]
 
+    class Config:
+        from_attributes = True
+
+class PaperTreeSchema(BaseModel):
+    id: str
+    exam_id: str
+    title: str
+    description: Optional[str] = None
+    order_index: int = 0
+    subjects: List[SubjectTreeSchema]
+    
     class Config:
         from_attributes = True
 

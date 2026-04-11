@@ -9,7 +9,7 @@ from app.schemas.schemas import (
     SubjectSchema, TopicSchema, PaperCreate, BulkIds,
     PaperUpdate, SubjectUpdate, TopicUpdate, SubtopicUpdate,
     PaperSummary, SubjectSummary, TopicSummary, SubtopicSummary,
-    PaperDetail
+    PaperDetail, PaperTreeSchema
 )
 # from app.services.content_generator import ContentGenerator
 import uuid
@@ -35,17 +35,14 @@ def get_all_subtopics(db: Session = Depends(get_db)):
     return db.query(Subtopic).order_by(Subtopic.order_index.asc()).all()
 
 
-@router.get("/tree", response_model=List[PaperSchema])
+@router.get("/tree", response_model=List[PaperTreeSchema])
 def get_syllabus_tree(exam_id: str = "Group_II", db: Session = Depends(get_db)):
-    # Optimized fetching using selectinload to prevent N+1 queries
+    # Optimized fetching: Only load the structure (Papers -> Subjects -> Topics -> Subtopics)
+    # Exclude heavy Concepts (textbook content) from the global tree for performance.
     query = db.query(Paper).options(
         selectinload(Paper.subjects)
         .selectinload(Subject.topics)
         .selectinload(Topic.subtopics)
-        .selectinload(Subtopic.concepts),
-        selectinload(Paper.subjects)
-        .selectinload(Subject.topics)
-        .selectinload(Topic.concepts)
     )
     
     if exam_id:

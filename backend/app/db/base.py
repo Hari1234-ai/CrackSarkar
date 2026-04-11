@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, Float, ForeignKey, DateTime, JSON, Text, Table
+from sqlalchemy import Column, Integer, String, Boolean, Float, ForeignKey, DateTime, JSON, Text, Table, Index
 from sqlalchemy.orm import relationship, declarative_base
 from datetime import datetime
 
@@ -9,28 +9,32 @@ paper_subject_association = Table(
     'paper_subject',
     Base.metadata,
     Column('paper_id', String, ForeignKey('papers.id', ondelete="CASCADE"), primary_key=True),
-    Column('subject_id', String, ForeignKey('subjects.id', ondelete="CASCADE"), primary_key=True)
+    Column('subject_id', String, ForeignKey('subjects.id', ondelete="CASCADE"), primary_key=True),
+    Index('idx_paper_subject_subject', 'subject_id')
 )
 
 subject_topic_association = Table(
     'subject_topic',
     Base.metadata,
     Column('subject_id', String, ForeignKey('subjects.id', ondelete="CASCADE"), primary_key=True),
-    Column('topic_id', String, ForeignKey('topics.id', ondelete="CASCADE"), primary_key=True)
+    Column('topic_id', String, ForeignKey('topics.id', ondelete="CASCADE"), primary_key=True),
+    Index('idx_subject_topic_topic', 'topic_id')
 )
 
 topic_subtopic_association = Table(
     'topic_subtopic',
     Base.metadata,
     Column('topic_id', String, ForeignKey('topics.id', ondelete="CASCADE"), primary_key=True),
-    Column('subtopic_id', String, ForeignKey('subtopics.id', ondelete="CASCADE"), primary_key=True)
+    Column('subtopic_id', String, ForeignKey('subtopics.id', ondelete="CASCADE"), primary_key=True),
+    Index('idx_topic_subtopic_subtopic', 'subtopic_id')
 )
 
 subtopic_concept_association = Table(
     'subtopic_concept',
     Base.metadata,
     Column('subtopic_id', String, ForeignKey('subtopics.id', ondelete="CASCADE"), primary_key=True),
-    Column('concept_id', String, ForeignKey('concepts.id', ondelete="CASCADE"), primary_key=True)
+    Column('concept_id', String, ForeignKey('concepts.id', ondelete="CASCADE"), primary_key=True),
+    Index('idx_subtopic_concept_concept', 'concept_id')
 )
 
 class Paper(Base):
