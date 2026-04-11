@@ -23,10 +23,10 @@ def perform_syllabus_repair(db):
     try:
         print("🚀 [REPAIR] Starting Deep Clean and Hierarchy Restoration...")
         
-        # 0. Wipe existing data for a clean slate (Crucial for production recovery)
+        # 0. Wipe existing data for a clean slate
         db.execute(paper_subject_association.delete())
         db.execute(subject_topic_association.delete())
-        from .db.base import topic_subtopic_association, subtopic_concept_association
+        from .db.base import topic_subtopic_association, subtopic_concept_association, Concept
         db.execute(topic_subtopic_association.delete())
         db.execute(subtopic_concept_association.delete())
         
@@ -34,6 +34,7 @@ def perform_syllabus_repair(db):
         db.query(Topic).delete()
         db.query(Subject).delete()
         db.query(Paper).delete()
+        db.query(Concept).delete()
         db.flush()
 
         # 1. High-level Papers
@@ -49,9 +50,6 @@ def perform_syllabus_repair(db):
             if not p:
                 p = Paper(id=pid, title=title, exam_id="Group_II", order_index=idx)
                 db.add(p)
-            else:
-                p.title = title
-                p.order_index = idx
         db.flush()
 
         # 2. Paper I: General Studies Section
@@ -60,16 +58,9 @@ def perform_syllabus_repair(db):
             gs_section = Subject(id="P1-S1", title="General Studies", order_index=1)
             db.add(gs_section)
         db.flush()
-        
-        # Link Section to Paper I
-        link = db.execute(paper_subject_association.select().where(
-            paper_subject_association.c.paper_id == "P1",
-            paper_subject_association.c.subject_id == "P1-S1"
-        )).first()
-        if not link:
-            db.execute(paper_subject_association.insert().values(paper_id="P1", subject_id="P1-S1"))
+        db.execute(paper_subject_association.insert().values(paper_id="P1", subject_id="P1-S1"))
 
-        # 3. Paper I Topics
+        # 3. Paper I Topics & High-Fidelity Content
         p1_topics = [
             "National & International Important Events",
             "Current Affairs (Regional, National & International)",
@@ -85,21 +76,39 @@ def perform_syllabus_repair(db):
             "Logical Reasoning, Analytical Ability & Data Interpretation",
             "Basic English"
         ]
+        
         for idx, title in enumerate(p1_topics, 1):
             tid = f"P1-S1-T{idx}"
-            t = db.query(Topic).filter(Topic.id == tid).first()
-            if not t:
-                t = Topic(id=tid, title=title, order_index=idx, weightage="High")
-                db.add(t)
+            t = Topic(id=tid, title=title, order_index=idx, weightage="High")
+            db.add(t)
+            db.flush()
+            db.execute(subject_topic_association.insert().values(subject_id="P1-S1", topic_id=tid))
+
+            # Add sample content for the first few topics
+            if idx <= 2:
+                # 3a. Create Subtopic
+                stid = f"{tid}-ST1"
+                st = Subtopic(id=stid, title="Core Analysis & Explanatory Material", order_index=1)
+                db.add(st)
                 db.flush()
-            
-            # Link Topic to Subject
-            t_link = db.execute(subject_topic_association.select().where(
-                subject_topic_association.c.subject_id == "P1-S1",
-                subject_topic_association.c.topic_id == tid
-            )).first()
-            if not t_link:
-                db.execute(subject_topic_association.insert().values(subject_id="P1-S1", topic_id=tid))
+                db.execute(topic_subtopic_association.insert().values(topic_id=tid, subtopic_id=stid))
+
+                # 3b. Create Concept with High-Fidelity Modules
+                cid = f"{tid}-C1"
+                modules = [
+                    {
+                        "type": "text", 
+                        "content": f"<h3>Executive Brief: {title}</h3><p>This high-fidelity manuscript provides a deep-dive analysis of {title} specifically tailored for TSPSC Group II examinations. We cover the historical context, current statistics, and regional implications for Telangana.</p><ul><li>Strategic Importance: Critical</li><li>Exam Weightage: High</li><li>Focus Area: Revision & Core Mastery</li></ul>"
+                    },
+                    {
+                        "type": "audio",
+                        "url": "https://www.learningcontainer.com/wp-content/uploads/2020/02/Sample-OGG-File.ogg"
+                    }
+                ]
+                c = Concept(id=cid, title="Academic Overview", modules=modules)
+                db.add(c)
+                db.flush()
+                db.execute(subtopic_concept_association.insert().values(subtopic_id=stid, concept_id=cid))
 
         # 4. Paper II Sections
         p2_sections = {
@@ -108,21 +117,13 @@ def perform_syllabus_repair(db):
             "P2-S3": "Social Structure & Issues"
         }
         for sid, title in p2_sections.items():
-            s = db.query(Subject).filter(Subject.id == sid).first()
-            if not s:
-                s = Subject(id=sid, title=title, order_index=1)
-                db.add(s)
-                db.flush()
-            
-            s_link = db.execute(paper_subject_association.select().where(
-                paper_subject_association.c.paper_id == "P2",
-                paper_subject_association.c.subject_id == sid
-            )).first()
-            if not s_link:
-                db.execute(paper_subject_association.insert().values(paper_id="P2", subject_id=sid))
+            s = Subject(id=sid, title=title, order_index=1)
+            db.add(s)
+            db.flush()
+            db.execute(paper_subject_association.insert().values(paper_id="P2", subject_id=sid))
 
         db.commit()
-        print("✅ [SUCCESS] Syllabus hierarchy synchronized.")
+        print("✅ [SUCCESS] Syllabus hierarchy & High-Fidelity content synchronized.")
         return True
     except Exception as e:
         db.rollback()
@@ -137,7 +138,11 @@ def auto_repair_on_startup():
             paper_subject_association.c.paper_id == "P1"
         )).first()
         
-        if not has_links:
+        # Also check if we have any concepts (to check if deep content exists)
+        from .db.base import Concept
+        has_content = db.query(Concept).first()
+        
+        if not has_links or not has_content:
             perform_syllabus_repair(db)
     finally:
         db.close()

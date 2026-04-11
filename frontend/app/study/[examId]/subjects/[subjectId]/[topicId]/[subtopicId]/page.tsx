@@ -5,9 +5,7 @@ import { useUser } from "@/providers/user-context";
 import { getSubtopicDetails, getSubjectDetails, getBackendOrigin } from "@/lib/api";
 import { 
   ArrowLeft, 
-  CheckCircle2, 
   BookOpen, 
-  Languages,
   Maximize2,
   Minimize2,
   ChevronRight
@@ -69,13 +67,15 @@ export default function SubtopicContentViewer() {
     );
   }
 
+  const theme = subject ? (subjectThemes[subject.title.toUpperCase()] || defaultTheme) : defaultTheme;
+
   return (
     <div className={cn(
       "min-h-screen pb-20 transition-all duration-500",
       isFocusMode ? "bg-background" : "pt-4"
     )}>
       <div className={cn(
-        "max-w-4xl mx-auto space-y-12",
+        "max-w-screen-xl mx-auto px-6 md:px-12 space-y-12",
         isFocusMode ? "pt-12" : ""
       )}>
         {/* Breadcrumbs & Navigation */}
@@ -95,7 +95,7 @@ export default function SubtopicContentViewer() {
                   <ChevronRight className="h-4 w-4" />
                   <span>Interactive Manuscript</span>
                 </div>
-                <h1 className="text-5xl font-black tracking-tight">{subtopic.title}</h1>
+                <h1 className="text-5xl md:text-7xl font-black tracking-tight leading-none">{subtopic.title}</h1>
               </div>
 
               <div className="flex items-center gap-4">
@@ -148,7 +148,7 @@ export default function SubtopicContentViewer() {
         )}
 
         {/* Content Modules */}
-        <section className="space-y-12">
+        <section className="space-y-16">
            {subtopic.concepts && subtopic.concepts.length > 0 ? (
              subtopic.concepts.map((concept: any, idx: number) => (
                <motion.div 
@@ -156,22 +156,22 @@ export default function SubtopicContentViewer() {
                  initial={{ opacity: 0, y: 20 }}
                  animate={{ opacity: 1, y: 0 }}
                  transition={{ delay: idx * 0.1 }}
-                 className="bg-card border border-border/50 rounded-[3rem] p-12 shadow-sm relative group hover:border-primary/20 transition-all"
+                 className="w-full relative"
                >
-                 
-                 <div className="space-y-8">
+                 <div className="space-y-10">
                     {concept.modules?.filter((m: any) => !m.lang || m.lang === (language === "english" ? "en" : "te")).map((mod: any, mIdx: number) => (
-                      <div key={mIdx}>
+                      <div key={mIdx} className="animate-in fade-in slide-in-from-bottom-4 duration-700">
                         {mod.type === 'text' && (
                           <div 
                             className={cn(
-                              "prose prose-slate dark:prose-invert max-w-none text-xl leading-relaxed text-foreground/80",
+                              "prose prose-slate dark:prose-invert max-w-none text-2xl md:text-3xl leading-[1.6] text-foreground/90 font-medium",
                               language === "telugu" && "font-telugu leading-loose"
                             )}
                             dangerouslySetInnerHTML={{ __html: mod.content }}
                           />
-                                   {mod.type === 'image' && (
-                          <div className="my-8 rounded-3xl overflow-hidden shadow-2xl border border-border">
+                        )}
+                        {mod.type === 'image' && (
+                          <div className="my-12 rounded-[3rem] overflow-hidden shadow-2xl border border-border">
                              <img 
                                src={mod.url.startsWith('http') ? mod.url : `${getBackendOrigin()}${mod.url}`} 
                                alt="Concept visualization" 
@@ -180,7 +180,7 @@ export default function SubtopicContentViewer() {
                           </div>
                         )}
                         {mod.type === 'video' && (
-                          <div className="my-8 rounded-3xl overflow-hidden shadow-2xl border border-border bg-black aspect-video">
+                          <div className="my-12 rounded-[3rem] overflow-hidden shadow-2xl border border-border bg-black aspect-video">
                              {mod.url.includes('youtube.com') || mod.url.includes('youtu.be') ? (
                                <iframe
                                  src={mod.url.replace('watch?v=', 'embed/').split('&')[0]}
@@ -204,14 +204,13 @@ export default function SubtopicContentViewer() {
                           </div>
                         )}
                         {mod.type === 'audio' && (
-                          <div className="my-8">
+                          <div className="my-12">
                              <AudioPlayer 
                                url={mod.url.startsWith('http') ? mod.url : `${getBackendOrigin()}${mod.url}`} 
-                               themeColor={subject ? (subjectThemes[subject.title.toUpperCase()]?.color || "#4f46e5") : "#4f46e5"}
+                               themeColor={theme.color}
                              />
                           </div>
                         )}
-             )}
                       </div>
                     ))}
                  </div>
